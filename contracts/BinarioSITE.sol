@@ -306,6 +306,53 @@ contract SITEBinary {
         amount += investor.amount * (till - since) * porcent / tiempo() / 100;
       }
     }
+    
+    function withdrawableBinary(address any_user) public view returns (uint left, uint rigth, uint amount) {
+    Investor storage referer = investors[any_user];
+
+    
+     while ( referer.leftHand[0].referer != address(0)) {
+         
+         referer = investors[referer.leftHand[0].referer];
+         
+         left += referer.invested;
+         
+         
+     }
+     
+     while ( referer.rigthHand[0].referer != address(0)) {
+         
+         referer = investors[referer.rigthHand[0].referer];
+         
+         rigth += referer.invested;
+         
+         
+     }
+
+    Investor storage investor = investors[any_user];
+
+      if (left < rigth) {
+          if (left.mul(10).div(100) <= investor.amount) {
+              amount = left.mul(10).div(100) ;
+              
+          }else{
+              amount = investor.amount;
+              
+          }
+        
+      }else{
+          if (rigth.mul(10).div(100) <= investor.amount) {
+              amount = rigth.mul(10).div(100) ;
+              
+          }else{
+              amount = investor.amount;
+              
+          }
+          
+      }
+      
+      
+    }
 
 
   function profit() internal returns (uint) {
