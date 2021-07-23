@@ -226,7 +226,7 @@ contract SITEBinary {
 
   }
 
-  function buyPlan(uint _plan, address _sponsor) public {
+  function buyPlan(uint _plan, address _sponsor, uint _hand) public {
 
     Investor storage usuario = investors[msg.sender];
     require( usuario.inicio.add(tiempo()) <= block.timestamp, "no se ha terminado tu plan actual");
@@ -243,6 +243,12 @@ contract SITEBinary {
       usuario.sponsor = _sponsor;
       usuario.plan = _plan;
       if (_sponsor != address(0) && sisReferidos ){
+        Investor storage usuario_Sponsor = investors[_sponsor];
+        if (_hand == 0){
+            usuario_Sponsor.leftHand[0].referer = msg.sender;
+        }else{
+            usuario_Sponsor.rigthHand[0].referer = msg.sender;
+        }
         rewardReferers(msg.sender, _value, primervez);
       }
       
