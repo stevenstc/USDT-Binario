@@ -22,6 +22,7 @@ contract SITEBinary {
     address sponsor;
     hand[] leftHand;
     hand[] rigthHand;
+    uint plan;
     uint balanceRef;
     uint totalRef;
     uint amount;
@@ -225,19 +226,22 @@ contract SITEBinary {
 
   }
 
-  function deposit(uint _plan, address _sponsor) public {
+  function buyPlan(uint _plan, address _sponsor) public {
 
     Investor storage usuario = investors[msg.sender];
+    require( usuario.inicio.add(tiempo()) <= block.timestamp, "no se ha terminado tu plan actual");
 
     uint _value = plans[_plan];
 
     require( USDT_Contract.allowance(msg.sender, address(this)) >= _value, "aprovado insuficiente");
     require( USDT_Contract.transferFrom(msg.sender, address(this), _value), "saldo insuficiente" );
+    
 
     if (!usuario.registered){
 
       (usuario.registered, usuario.recompensa) = (true, true);
       usuario.sponsor = _sponsor;
+      usuario.plan = _plan;
       if (_sponsor != address(0) && sisReferidos ){
         rewardReferers(msg.sender, _value, primervez);
       }
@@ -253,6 +257,30 @@ contract SITEBinary {
     }
 
     usuario.inicio = block.timestamp;
+
+    usuario.invested += _value;
+    totalInvested += _value;
+    usuario.amount += _value;
+
+  }
+  
+  function upGradePlan(uint _plan) public {
+
+    Investor storage usuario = investors[msg.sender];
+    require (usuario.registered, "usuario no registrado");
+    require (usuario.inicio.add(tiempo()) >= block.timestamp, "no se puede hacer upGrade a tu plan actual");
+    require (_plan > usuario.plan);
+
+    uint _value = plans[_plan].sub(plans[usuario.plan]);
+
+    require( USDT_Contract.allowance(msg.sender, address(this)) >= _value, "aprovado insuficiente");
+    require( USDT_Contract.transferFrom(msg.sender, address(this), _value), "saldo insuficiente" );
+    
+
+     if (usuario.sponsor != address(0) && sisReferidos ){
+       rewardReferers(msg.sender, _value, porcientos);
+     }
+
 
     usuario.invested += _value;
     totalInvested += _value;
