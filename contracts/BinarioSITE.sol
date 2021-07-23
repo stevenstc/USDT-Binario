@@ -12,6 +12,7 @@ contract SITEBinary {
 
   struct hand {
     uint reclamados;
+    uint lost;
     address referer;
   }
 
@@ -308,48 +309,51 @@ contract SITEBinary {
     }
     
     function withdrawableBinary(address any_user) public view returns (uint left, uint rigth, uint amount) {
-    Investor storage referer = investors[any_user];
-
+        Investor storage referer = investors[any_user];
+        Investor storage investor = investors[any_user];
     
-     while ( referer.leftHand[0].referer != address(0)) {
-         
-         referer = investors[referer.leftHand[0].referer];
-         
-         left += referer.invested;
-         
-         
-     }
-     
-     while ( referer.rigthHand[0].referer != address(0)) {
-         
-         referer = investors[referer.rigthHand[0].referer];
-         
-         rigth += referer.invested;
-         
-         
-     }
-
-    Investor storage investor = investors[any_user];
-
-      if (left < rigth) {
-          if (left.mul(10).div(100) <= investor.amount) {
-              amount = left.mul(10).div(100) ;
-              
-          }else{
-              amount = investor.amount;
-              
-          }
         
-      }else{
-          if (rigth.mul(10).div(100) <= investor.amount) {
-              amount = rigth.mul(10).div(100) ;
-              
+         while ( referer.leftHand[0].referer != address(0)) {
+             
+             referer = investors[referer.leftHand[0].referer];
+             
+             left += referer.invested;
+             
+             
+         }
+         
+         left -= investor.leftHand[0].reclamados.add(investor.leftHand[0].lost);
+         
+         while ( referer.rigthHand[0].referer != address(0)) {
+             
+             referer = investors[referer.rigthHand[0].referer];
+             
+             rigth += referer.invested;
+             
+             
+         }
+    
+        rigth -= investor.rigthHand[0].reclamados.add(investor.rigthHand[0].lost);
+    
+          if (left < rigth) {
+              if (left.mul(10).div(100) <= investor.amount) {
+                  amount = left.mul(10).div(100) ;
+                  
+              }else{
+                  amount = investor.amount;
+                  
+              }
+            
           }else{
-              amount = investor.amount;
+              if (rigth.mul(10).div(100) <= investor.amount) {
+                  amount = rigth.mul(10).div(100) ;
+                  
+              }else{
+                  amount = investor.amount;
+                  
+              }
               
           }
-          
-      }
       
       
     }
@@ -359,6 +363,38 @@ contract SITEBinary {
     Investor storage investor = investors[msg.sender];
 
     uint amount = withdrawable(msg.sender);
+    
+    uint amountB;
+    uint left;
+    uint rigth;
+    
+    (left, rigth, amountB) = withdrawableBinary(msg.sender);
+    
+    if (investor.inicio.add(tiempo()) >= block.timestamp){
+    
+        if(left < rigth){
+            investor.rigthHand[0].reclamados += left;
+            investor.leftHand[0].reclamados += left;
+            
+        }else{
+            investor.rigthHand[0].reclamados += rigth;
+            investor.leftHand[0].reclamados += rigth;
+            
+        }
+        amount += amountB;
+    }else{
+        
+        if(left < rigth){
+            investor.rigthHand[0].lost += left;
+            investor.leftHand[0].lost += left;
+            
+        }else{
+            investor.rigthHand[0].lost += rigth;
+            investor.leftHand[0].lost += rigth;
+            
+        }
+        
+    }
 
     amount += investor.balanceRef;
     investor.balanceRef = 0;
