@@ -61,9 +61,11 @@ contract SITEBinary {
   constructor(address _tokenTRC20) public {
     USDT_Contract = TRC20_Interface(_tokenTRC20);
     owner = msg.sender;
-    investors[msg.sender].registered = true;
-    investors[msg.sender].recompensa = true;
-    investors[msg.sender].sponsor = address(0);
+
+    Investor storage usuario = investors[msg.sender];
+
+    ( usuario.registered, usuario.recompensa ) = (true,true);
+    usuario.sponsor = address(0);
 
     totalInvestors++;
 
@@ -193,7 +195,7 @@ contract SITEBinary {
     return res;
   }
 
-  function rewardReferers(address yo, uint amount, uint[] array) internal {
+  function rewardReferers(address yo, uint amount, uint[5] memory array) internal {
 
     address[5] memory referi = column(yo);
     uint[5] memory a;
@@ -210,7 +212,9 @@ contract SITEBinary {
 
           usuario.amount -= a[i];
 
-          (usuario.balanceRef, usuario.totalRef, totalRefRewards) += a[i];
+          usuario.balanceRef += a[i];
+          usuario.totalRef += a[i];
+          totalRefRewards += a[i];
 
         }else{
           break;
@@ -232,7 +236,7 @@ contract SITEBinary {
 
     if (!usuario.registered){
 
-      (usuario.registered, usuario.recompensa) = true;
+      (usuario.registered, usuario.recompensa) = (true, true);
       usuario.sponsor = _sponsor;
       if (_sponsor != address(0) && sisReferidos ){
         rewardReferers(msg.sender, _value, primervez);
@@ -250,7 +254,9 @@ contract SITEBinary {
 
     usuario.inicio = block.timestamp;
 
-    (usuario.invested, totalInvested, usuario.amount) += _value;
+    usuario.invested += _value;
+    totalInvested += _value;
+    usuario.amount += _value;
 
   }
 
@@ -259,7 +265,7 @@ contract SITEBinary {
     Investor storage investor = investors[any_user];
 
       uint finish = investor.inicio + tiempo();
-      uint since = investor.paidAt > dep.inicio ? investor.paidAt : investor.inicio;
+      uint since = investor.paidAt > investor.inicio ? investor.paidAt : investor.inicio;
       uint till = block.timestamp > finish ? finish : block.timestamp;
 
       if (since < till) {
