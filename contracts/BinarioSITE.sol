@@ -384,16 +384,9 @@ contract SITEBinary {
         amount += amountB;
     }else{
         
-        if(left < rigth){
-            investor.rigthHand[0].lost += left;
+            investor.rigthHand[0].lost += rigth;
             investor.leftHand[0].lost += left;
             
-        }else{
-            investor.rigthHand[0].lost += rigth;
-            investor.leftHand[0].lost += rigth;
-            
-        }
-        
     }
 
     amount += investor.balanceRef;
