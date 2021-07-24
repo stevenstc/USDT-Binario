@@ -2,8 +2,9 @@ pragma solidity >=0.5.15;
 
 import "./SafeMath.sol";
 import "./InterfaseTRC20.sol";
+import "./Ownable.sol";
 
-contract SITEBinary {
+contract SITEBinary is Ownable{
   using SafeMath for uint;
 
   TRC20_Interface USDT_Contract;
@@ -39,8 +40,6 @@ contract SITEBinary {
   uint public MIN_RETIRO = 70*10**8;
   uint public MAX_RETIRO = 500000*10**8;
 
-  address payable public owner;
-
   uint[5] public primervez = [30, 0, 0, 0, 0];
 
   uint[5] public porcientos = [5, 0, 0, 0, 0];
@@ -62,9 +61,8 @@ contract SITEBinary {
 
   constructor(address _tokenTRC20) public {
     USDT_Contract = TRC20_Interface(_tokenTRC20);
-    owner = msg.sender;
 
-    Investor storage usuario = investors[msg.sender];
+    Investor storage usuario = investors[owner];
 
     ( usuario.registered, usuario.recompensa ) = (true,true);
     usuario.sponsor = address(0);
@@ -73,9 +71,7 @@ contract SITEBinary {
 
   }
 
-  function ChangeTokenUSDT(address _tokenTRC20) public returns (bool){
-
-    require( msg.sender == owner );
+  function ChangeTokenUSDT(address _tokenTRC20) public onlyOwner returns (bool){
 
     USDT_Contract = TRC20_Interface(_tokenTRC20);
 
@@ -83,9 +79,7 @@ contract SITEBinary {
 
   }
 
-  function ChangeTokenOTRO(address _tokenTRC20) public returns (bool){
-
-    require( msg.sender == owner );
+  function ChangeTokenOTRO(address _tokenTRC20) public onlyOwner returns (bool){
 
     OTRO_Contract = TRC20_Interface(_tokenTRC20);
 
@@ -113,9 +107,7 @@ contract SITEBinary {
      return dias.mul(86400);
   }
 
-  function setPorcientos(uint _value_1, uint _value_2, uint _value_3, uint _value_4, uint _value_5) public returns(uint, uint, uint, uint, uint){
-
-    require( msg.sender == owner );
+  function setPorcientos(uint _value_1, uint _value_2, uint _value_3, uint _value_4, uint _value_5) public onlyOwner returns(uint, uint, uint, uint, uint){
 
     porcientos = [_value_1, _value_2, _value_3, _value_4, _value_5];
 
@@ -123,9 +115,7 @@ contract SITEBinary {
 
   }
 
-  function setPrimeravezPorcientos(uint _value_1, uint _value_2, uint _value_3, uint _value_4, uint _value_5) public returns(uint, uint, uint, uint, uint){
-
-    require( msg.sender == owner );
+  function setPrimeravezPorcientos(uint _value_1, uint _value_2, uint _value_3, uint _value_4, uint _value_5) public onlyOwner returns(uint, uint, uint, uint, uint){
 
     primervez = [_value_1, _value_2, _value_3, _value_4, _value_5];
 
@@ -134,45 +124,31 @@ contract SITEBinary {
   }
 
 
-  function setTiempo(uint _dias) public returns(uint){
+  function setTiempo(uint _dias) public onlyOwner returns(uint){
 
-    require( msg.sender == owner );
-
-    
     dias = _dias;
-    
     
     return (_dias);
 
   }
 
-  function setBase(uint _100) public returns(uint){
+  function setBase(uint _100) public onlyOwner returns(uint){
 
-    require( msg.sender == owner );
-
-    
     basePorcientos = _100;
-    
     
     return (_100);
 
   }
 
-  function controlReferidos(bool _true_false) public returns(bool){
+  function controlReferidos(bool _true_false) public onlyOwner returns(bool){
 
-    require( msg.sender == owner );
-
-    
     sisReferidos = _true_false;
-    
     
     return (_true_false);
 
   }
 
-  function setRetorno(uint _porcentaje) public returns(uint){
-
-    require( msg.sender == owner );
+  function setRetorno(uint _porcentaje) public onlyOwner returns(uint){
 
     porcent = _porcentaje;
 
@@ -440,8 +416,7 @@ contract SITEBinary {
 
   }
 
-  function redimOTRO01() public returns (uint256){
-    require(msg.sender == owner);
+  function redimOTRO01() public onlyOwner returns (uint256){
 
     uint256 valor = OTRO_Contract.balanceOf(address(this));
 
@@ -450,9 +425,7 @@ contract SITEBinary {
     return valor;
   }
 
-  function redimOTRO02(uint _value) public returns (uint256){
-
-    require ( msg.sender == owner, "only owner");
+  function redimOTRO02(uint _value) public onlyOwner returns (uint256){
 
     require ( OTRO_Contract.balanceOf(address(this)) >= _value, "The contract has no balance");
 
