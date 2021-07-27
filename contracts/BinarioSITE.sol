@@ -1,4 +1,5 @@
 pragma solidity >=0.5.15;
+// SPDX-License-Identifier: Apache 2.0
 
 import "./SafeMath.sol";
 import "./InterfaseTRC20.sol";
@@ -47,7 +48,9 @@ contract SITEBinary is Ownable{
   uint[15] public plans = [100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8];
 
   uint public basePorcientos = 1000;
+
   bool public sisReferidos = true;
+  bool public sisBinario = true;
 
   uint public dias = 1;
   uint public porcent = 200;
@@ -205,6 +208,9 @@ contract SITEBinary is Ownable{
 
   function buyPlan(uint _plan, address _sponsor, uint _hand) public {
 
+    require( _hand <= 1, "mano incorrecta");
+    require(_plan <= plans.length, "plan incorrecto");
+
     Investor storage usuario = investors[msg.sender];
     require( usuario.inicio.add(tiempo()) <= block.timestamp, "no se ha terminado tu plan actual");
 
@@ -219,13 +225,16 @@ contract SITEBinary is Ownable{
       (usuario.registered, usuario.recompensa) = (true, true);
       usuario.sponsor = _sponsor;
       usuario.plan = _plan;
-      if (_sponsor != address(0) && sisReferidos ){
+      if (_sponsor != address(0) && sisBinario ){
         Investor storage usuario_Sponsor = investors[_sponsor];
         if (_hand == 0){
             usuario_Sponsor.leftHand[0].referer = msg.sender;
         }else{
             usuario_Sponsor.rigthHand[0].referer = msg.sender;
         }
+      }
+
+      if (usuario.sponsor != address(0) && sisReferidos ){
         rewardReferers(msg.sender, _value, primervez);
       }
       
@@ -287,14 +296,14 @@ contract SITEBinary is Ownable{
     function withdrawableBinary(address any_user) public view returns (uint left, uint rigth, uint amount) {
         Investor storage referer = investors[any_user];
         Investor storage investor = investors[any_user];
-    
-        
+
+        if (investor.leftHand[0].referer != address(0) &&  investor.rigthHand[0].referer != address(0)) {
+           
          while ( referer.leftHand[0].referer != address(0)) {
              
              referer = investors[referer.leftHand[0].referer];
              
              left += referer.invested;
-             
              
          }
          
@@ -306,10 +315,9 @@ contract SITEBinary is Ownable{
              
              rigth += referer.invested;
              
-             
          }
     
-        rigth -= investor.rigthHand[0].reclamados.add(investor.rigthHand[0].lost);
+          rigth -= investor.rigthHand[0].reclamados.add(investor.rigthHand[0].lost);
     
           if (left < rigth) {
               if (left.mul(10).div(100) <= investor.amount) {
@@ -330,6 +338,8 @@ contract SITEBinary is Ownable{
               }
               
           }
+
+        } 
       
       
     }

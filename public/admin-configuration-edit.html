@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Smart Site Application">
+    <meta name="author" content="Sourcelatam.tech">
+    <title>Configuración | Editar | Smart Site</title>
+    <link rel="shortcut icon" type="image/png" href="assets/img/logos/favicon.png">
+    <link href="assets/fonts/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="assets/vendor/flag-icon/flag-icon/flag-icon.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-select/bootstrap-select.min.css" rel="stylesheet">
+    <link href="assets/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/theme-v1.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top" class="">
+
+    <div id="wrapper">
+        <!-- START MENU -->
+        <ul class=" navbar-nav  sidebar sidebar-light accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="javascript:void(0);">
+                <div class="sidebar-brand-icon">
+                    <img src="assets/img/logos/logo2.png" class="app-logo">
+                </div>
+                <div class="sidebar-brand-text mx-2">
+                    <img src="assets/img/logos/logo3.png" class="app-logo app-logo-text">
+                </div>
+            </a>
+            <hr class="sidebar-divider my-3">
+            <div class="sidebar-heading">
+                Menú
+            </div>
+            <span id="menu-items"></span>
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0 d-none" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <!-- END MENU -->
+        <!-- START NAVBAR -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <nav class="navbar navbar-expand navbar-dark  topbar mb-0 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                    <ul class="navbar-nav ml-auto">
+                        <!-- Nav IParam - Alerts -->
+                        <!-- Nav IParam - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="userDropdown">
+                                <span class="mr-2 d-none d-lg-inline small" id="profileName"></span>
+                                <img class="img-profile rounded-circle" src="assets/img/default-avatar.png">
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <span id="item-profile">
+                                <a class="dropdown-item" href="/app/profile">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Perfil
+                                </a>
+                                <div class="dropdown-divider"></div>
+                            </span>
+                                <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Cerrar sesión
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End of Topbar -->
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+                    <!-- Page Heading -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title"><i class="fas fa-cogs"></i> Configuración</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- content functions -->
+                    <div class="col-sm-12 col-md-12 col-lg-12 mx-auto">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="content-functions pull-right">
+                                    <a class="btn btn-primary mr-3" href="javascript:tokenWdl.showTokenWdlModal();"> Configuración de retiro</a>
+                                    <a class="btn btn-primary mr-3" href="javascript:showPassiveModal();"> Bono pasivo</a>
+                                    <a class="btn btn-primary mr-3" href="javascript:void(0);" onclick="fBinaryPaymentTask()">
+                                        <i class="fas fa-thumbtack"></i>
+                                        <span class="pl-1">Ejecutar corte de binario</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Row -->
+                    <div class="row p-3">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <!-- Form basic info -->
+                                    <form id="saveConfigForm" class="form mt-4" name="saveConfigForm" method="post" action="/sourcelatam/admin/api/system/configuration/save">
+                                        <div class="form-group row">
+                                            <label for="cnfCompanyName" class="col-sm-3 col-form-label">Nombre
+                                            Empresa</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="cnfCompanyName" name="cnfCompanyName"
+                                                 placeholder="Nombre empresa" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="cnfCompanyId" class="col-sm-3 col-form-label">Nit Empresa</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="cnfCompanyId" name="cnfCompanyId" placeholder="Nit empresa" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="cnfCompanyAddress" class="col-sm-3 col-form-label">Dirección
+                                            Empresa</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="cnfCompanyAddress" name="cnfCompanyAddress" placeholder="Dirección empresa" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="cnfSite" class="col-sm-3 col-form-label">Sitio web Empresa</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="cnfSite" name="cnfSite" placeholder="Sitio web empresa" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="priceSite" class="col-sm-3 col-form-label">Precio Site</label>
+                                            <div class="col-sm-9">
+                                                <input type="number" class="form-control" id="priceSite" name="priceSite" placeholder="Precio Site" required="required" min="0" step="any">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="contractSite" class="col-sm-3 col-form-label">Contrato Site</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="contractSite" name="contractSite" placeholder="Contrato Site" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="tronNetworkList" class="col-sm-3 col-form-label">Red de Tron</label>
+                                            <div class="col-sm-9">
+                                                <select id="tronNetworkList" name="tronNetwork" required="required" class="form-control"></select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="tronGridApi" class="col-sm-3 col-form-label">Trongrid API</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="tronGridApi" name="tronGridApi" placeholder="Trongrid API" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="pvtKeySite" class="col-sm-3 col-form-label">Clave Site</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="pvtKeySite" name="pvtKeySite" placeholder="Clave Site" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="cnfCpPubKey" class="col-sm-3 col-form-label">Clave pública Coinpayments</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control"
+                                                 id="cnfCpPubKey" name="cnfCpPubKey" 
+                                                 placeholder="Clave pública Coinpayments" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="cnfCpPvtKey" class="col-sm-3 col-form-label">Clave privada Coinpayments</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control"
+                                                 id="cnfCpPvtKey" name="cnfCpPvtKey"
+                                                  placeholder="Clave pública Coinpayments" required="required">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-10">
+                                                <button type="submit" class="btn btn-primary">Guardar</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-dark">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Smart Site V<span id="version"></span> Desde 2021</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- END NAVBAR -->
+        <!-- End of Content Wrapper -->
+    </div>
+    <!-- End of Page Wrapper -->
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+
+    <!-- Passive Modal-->
+    <div class="modal fade" id="passiveModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bono pasivo</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                </div>
+                <form class="form mt-4" name="savePassiveForm" method="post" action="/sourcelatam/admin/api/system/configuration/save-passive">
+                    <div class="modal-body">
+                        <div class="form-group row">
+                            <label for="passiveNames" class="col-sm-3 col-form-label">Nombre</label>
+                            <div class="col-sm-9">
+                                <select id="passiveNames" name="passiveName" required="required" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="passiveFrequencies" class="col-sm-3 col-form-label">Frecuencia</label>
+                            <div class="col-sm-9">
+                                <select id="passiveFrequencies" name="passiveFrequency" required="required" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="passiveValues" class="col-sm-3 col-form-label" id="valueName"></label>
+                            <div class="col-sm-9">
+                                <select id="passiveValues" name="passiveValue" required="required" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="passiveValuePer" class="col-sm-3 col-form-label">Porcentaje (%)</label>
+                            <div class="col-sm-9">
+                                <input id="passiveValuePer" name="passiveValuePer" min="0" max="100" step="any" required="required" type="number" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <lalbel for="graceTime" class="col-sm-3 col-form-label">Tiempo de gracia</lalbel>
+                            <div class="col-sm-9">
+                                <input id="graceTime" name="graceTime" min="0" step="any" required="required" type="number" class="form-control" />
+                                <small>Ingrese el tiempo en horas. Ej: 1 Semana = 24 horas * 7 días = 168 horas</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token wdl Modal-->
+    <div class="modal fade" id="token-wdl-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Configurar retiro de Tetra y Tetra Gold</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                </div>
+                <form class="form mt-4" name="tokenWdlForm" method="post" action="/sourcelatam/app/api/v2/token-wdl/save">
+                    <div class="modal-body">
+                        <div class="form-group row">
+                            <label for="tokenWdl.names" class="col-sm-3 col-form-label">Nombre</label>
+                            <div class="col-sm-9">
+                                <select id="tokenWdl.names" name="name" required="required" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="form-group row" id="tokenWdl.frequencies.row">
+                            <label for="tokenWdl.frequencies" class="col-sm-3 col-form-label">Frecuencia</label>
+                            <div class="col-sm-9">
+                                <select id="tokenWdl.frequencies" name="frequency" required="required" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="form-group row" id="tokenWdl.frequencyValues.row">
+                            <label for="tokenWdl.frequencyValues" id="tokenWdl.frequencyLabel" class="col-sm-3 col-form-label"></label>
+                            <div class="col-sm-9">
+                                <select id="tokenWdl.frequencyValues" name="frequencyValue" required="required" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="form-group row" id="tokenWdl.transferPer.row">
+                            <label for="tokenWdl.transferPer" class="col-sm-3 col-form-label">Transferencia (%)</label>
+                            <div class="col-sm-9">
+                                <input id="tokenWdl.transferPer" name="transferPer" min="0" max="100" step="any" required="required" type="number" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row d-none" id="tokenWdl.feePer.row">
+                            <label for="tokenWdl.feePer" class="col-sm-3 col-form-label">Comisión (%)</label>
+                            <div class="col-sm-9">
+                                <input id="tokenWdl.feePer" name="feePer" min="0" max="100" step="any" type="number" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">¿Preparado para salir?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                </div>
+                <div class="modal-body">Seleccione "Cerrar sesión" si está listo para finalizar su sesión actual.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                    <a class="btn btn-primary" href="/auth/logout">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Core plugin JavaScript-->
+    <script src="assets/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- Custom scripts for all pages-->
+    <script src="assets/js/sb-admin-2.min.js"></script>
+    <!--JSRequest core-->
+    <script src="assets/vendor/jquery-blockUI/jquery.blockUI.min.js"></script>
+    <script src="assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="assets/vendor/bootstrap-select/bootstrap-select.min.js"></script>
+    <script src="assets/vendor/wav/wallet-address-validator.min.js"></script>
+    <script src="assets/js/file.upload.app.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/menu.js"></script>
+    <script src="assets/js/pages/admin-configuration-edit.js"></script>
+    <script src="assets/js/pages/admin-token-wdl.js"></script>
+
+</body>
+
+</html>

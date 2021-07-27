@@ -23,7 +23,7 @@ const TronLinkGuide = props => {
     if(!installed) {
         return (
             <div className='row' onClick={ openTronLink }>
-                <div className='col-sm-8'>
+                <div className='col-sm-8 text-white'>
                     <h1>Instalar TronLink</h1>
                     <p>
                         To create a post or tip others you must install TronLink. TronLink es una wallet de TRON que puede descargar en <a href={ WEBSTORE_URL } target='_blank' rel='noopener noreferrer'>Chrome Webstore</a>.
