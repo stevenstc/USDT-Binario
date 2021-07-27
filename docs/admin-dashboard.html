@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Smart Site Application">
+    <meta name="author" content="Sourcelatam.tech">
+    <title>Tablero | Smart Site</title>
+    <link rel="shortcut icon" type="image/png" href="assets/img/logos/favicon.png">
+    <link href="assets/fonts/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/theme-v1.css" rel="stylesheet">
+</head>
+
+<body id="page-top" class="">
+    <div id="wrapper">
+        <ul class=" navbar-nav  sidebar sidebar-light accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/admin/dashboard">
+                <div class="sidebar-brand-icon">
+                    <img src="assets/img/logos/logo2.png" class="app-logo">
+                </div>
+                <div class="sidebar-brand-text mx-2">
+                    <img src="assets/img/logos/logo3.png" class="app-logo">
+                </div>
+            </a>
+            <span id="menu-items"></span>
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0 d-none" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <nav class="navbar navbar-expand navbar-dark  topbar mb-0 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+                    <ul class="navbar-nav ml-auto">
+                        <!-- Nav IParam - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline small" id="profileName"></span>
+                                <img class="img-profile rounded-circle" src="assets/img/default-avatar.png">
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="/admin/profile">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Perfil
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Cerrar sesión
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">
+                                    <i class="fas fa-tachometer-alt"></i> Tablero
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Content Row -->
+                    <div class="row">
+
+
+                        <div class="col-lg-7 col-md-7 col-sm-12">
+
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0">Resumen de ganancias</h6>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="earnings-chart">500</canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5 col-md-5 col-sm-12">
+                            <div class="row no-gutters">
+                                <!-- Card -->
+                                <div class="col-lg-12 col-md-12 col-sm-12 mb-4">
+                                    <div class="card bg-variant-1 shadow h-100 py-2">
+                                        <div class="card-body p-2">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="h5 mb-0">
+                                                        <h1 class="text-white" id="totalUsers"></h1>
+                                                    </div>
+                                                    <div class="text-xs text-uppercase mb-1">
+                                                        Usuarios
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-users fa-2x"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card -->
+                                <div class="col-lg-12 col-md-12 col-sm-12 mb-4">
+                                    <div class="card bg-variant-2 shadow h-100 py-2">
+                                        <div class="card-body p-2">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="h5 mb-0">
+                                                        <h1 class="text-white" id="totalIncome"></h1>
+                                                    </div>
+                                                    <div class="text-xs text-uppercase mb-1">
+                                                        Ingresos
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-gem fa-2x"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card -->
+                                <div class="col-lg-12 col-md-12 col-sm-12 mb-4">
+                                    <div class="card bg-variant-3 shadow h-100 py-2">
+                                        <div class="card-body p-2">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="h5 mb-0">
+                                                        <h1 class="text-white" id="totalExpenses"></h1>
+                                                    </div>
+                                                    <div class="text-xs text-uppercase mb-1">
+                                                        Egresos
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-coins fa-2x"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card -->
+                                <div class="col-lg-12 col-md-12 col-sm-12 mb-4">
+                                    <div class="card bg-variant-4 shadow h-100 py-2">
+                                        <div class="card-body p-2">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="h5 mb-0">
+                                                        <h1 class="text-white" id="totalProfit"></h1>
+                                                    </div>
+                                                    <div class="text-xs text-uppercase mb-1">
+                                                        Beneficio
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-globe fa-2x"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--  Card  -->
+                                <div class="col-xl-4 col-md-6 col-sm-12 mb-4" style="display: none;">
+                                    <div class="card border-left-custom-green shadow h-100 py-2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-custom-green text-uppercase mb-1">
+                                                        Usuarios Activos (
+                                                        <span id="totalActiveUsers">0</span>)
+                                                    </div>
+                                                    <div class="row no-gutters align-items-center">
+                                                        <div class="col-auto">
+                                                            <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="totalActiveUsersPerText"></div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="progress progress-sm mr-2">
+                                                                <div id="totalActiveUsersPer" class="progress-bar bg-custom-green" role="progressbar" style="width: 0%"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-xs font-weight-bold text-info text-uppercase mt-2">
+                                                        <small><a href="/admin/users">Ver más</a></small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--  Card  -->
+                                <div class="col-xl-4 col-md-4 col-sm-12 mb-4" style="display: none;">
+                                    <div class="card border-left-danger shadow h-100 py-2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                        Usuarios Inactivos (
+                                                        <span id="totalInactiveUsers">0</span>)
+                                                    </div>
+                                                    <div class="row no-gutters align-items-center">
+                                                        <div class="col-auto">
+                                                            <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="totalInactiveUsersPerText"></div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="progress progress-sm mr-2">
+                                                                <div id="totalInactiveUsersPer" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-xs font-weight-bold text-info text-uppercase mt-2">
+                                                        <small><a href="/admin/users">Ver más</a></small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-user-times fa-2x text-gray-300"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <!-- Conternt Row-->
+                    <div class="row">
+                        <div class="col-sm-12 col-md-12 col-lg-12 mx-auto py-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="pb-4">Últimos registros</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-filter">
+                                            <thead id="thead-filter">
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">USUARIO</th>
+                                                    <th scope="col">EMAIL</th>
+                                                    <th scope="col">NOMBRE</th>
+                                                    <th scope="col">TELÉFONO</th>
+                                                    <th scope="col">PAÍS</th>
+                                                    <th scope="col">ROL</th>
+                                                    <th scope="col">ESTADO</th>
+                                                    <th scope="col">TIPO</th>
+                                                    <th scope="col">PATROCINADOR</th>
+                                                    <th scope="col">ETIQUETA</th>
+                                                    <th scope="col"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="table-filter">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-dark">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Smart Site V<span id="version"></span> Desde 2021</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">¿Preparado para salir?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                </div>
+                <div class="modal-body">Seleccione "Cerrar sesión" si está listo para finalizar su sesión actual.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                    <a class="btn btn-primary" href="/auth/logout">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Core plugin JavaScript-->
+    <script src="assets/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- Custom scripts for all pages-->
+    <script src="assets/js/sb-admin-2.min.js"></script>
+    <!-- Page level plugins -->
+    <script src="assets/vendor/chart.js/Chart.min.js"></script>
+    <!--JSRequest core-->
+    <script src="assets/vendor/jquery-blockUI/jquery.blockUI.min.js"></script>
+    <script src="assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/menu.js"></script>
+    <script src="assets/js/charts.app.js"></script>
+    <!-- JSPages -->
+    <script src="assets/js/pages/admin-dashboard.js"></script>
+
+</body>
+
+</html>

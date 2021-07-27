@@ -1,0 +1,163 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.network-tree {
+    margin-top: 0;
+}
+
+.network-tree-content {
+    overflow: auto;
+    margin: 0 auto;
+    max-width: 780px;
+}
+
+.network-tree ul {
+    padding-top: 20px;
+    position: relative;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+}
+
+.network-tree li {
+    float: left;
+    text-align: center;
+    list-style-type: none;
+    position: relative;
+    padding: 20px 5px 0 5px;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+}
+
+
+/*We will use ::before and ::after to draw the connectors*/
+
+.network-tree li::before,
+.network-tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 1px solid #e9538b;
+    width: 50%;
+    height: 20px;
+}
+
+.network-tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 1px solid #e9538b;
+}
+
+
+/*We need to remove left-right connectors from elements without
+any siblings*/
+
+.network-tree li:only-child::after,
+.network-tree li:only-child::before {
+    display: none;
+}
+
+
+/*Remove space from the top of single children*/
+
+.network-tree li:only-child {
+    padding-top: 0;
+}
+
+
+/*Remove left connector from first child and
+right connector from last child*/
+
+.network-tree li:first-child::before,
+.network-tree li:last-child::after {
+    border: 0 none;
+}
+
+
+/*Adding back the vertical connector to the last nodes*/
+
+.network-tree li:last-child::before {
+    border-right: 1px solid #e9538b;
+    border-radius: 0 5px 0 0;
+    -webkit-border-radius: 0 5px 0 0;
+    -moz-border-radius: 0 5px 0 0;
+}
+
+.network-tree li:first-child::after {
+    border-radius: 5px 0 0 0;
+    -webkit-border-radius: 5px 0 0 0;
+    -moz-border-radius: 5px 0 0 0;
+}
+
+
+/*Time to add downward connectors from parents*/
+
+.network-tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    border-left: 1px solid #e9538b;
+    width: 0;
+    height: 25px;
+}
+
+.network-tree li a {
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #666;
+    font-family: arial, verdana, tahoma;
+    font-size: 11px;
+    display: inline-block;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    width: 64px;
+    height: 64px;
+    border: 1px solid #e9538b;
+    border-radius: 50%;
+}
+
+.user-network {
+    background-repeat: no-repeat;
+    background-clip: border-box;
+    background-origin: padding-box;
+    background-size: contain;
+    background-image: url("../img/default-avatar.png");
+}
+
+
+/* Media query */
+
+@media only screen and (max-width: 900px) {
+    .network-tree-content {
+        max-width: 220px;
+    }
+    .network-tree li {
+        padding: 20px 0px;
+    }
+    .network-tree li a {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+
+/* Media query */
+
+@media only screen and (min-width: 901px) and (max-width: 1200px) {
+    .network-tree-content {
+        max-width: 600px;
+    }
+    .network-tree li a {
+        width: 36px;
+        height: 36px;
+    }
+}
