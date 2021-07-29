@@ -69,13 +69,16 @@ export default class Oficina extends Component {
       }
       let mydireccion = await window.tronWeb.trx.getAccount();
       mydireccion = window.tronWeb.address.fromHex(mydireccion.address)
+      mydireccion = await Utils.contract.addressToId(mydireccion).call();
       mydireccion = loc+'?ref='+mydireccion;
       this.setState({
-        link: mydireccion,
+        link: mydireccion+"&hand=izq",
+        link2: mydireccion+"&hand=der",
       });
     }else{
       this.setState({
         link: "Haz una inversión para obtener el LINK de referido",
+        link2: "Haz una inversión para obtener el LINK de referido",
       });
     }
   }
@@ -140,7 +143,7 @@ export default class Oficina extends Component {
 
 
   render() {
-    var { balanceRef, totalRef, invested,  withdrawn , my, direccion, link} = this.state;
+    var { balanceRef, invested, my, direccion, link, link2} = this.state;
 
     var available = (balanceRef+my);
     available = available.toFixed(2);
@@ -149,20 +152,11 @@ export default class Oficina extends Component {
     balanceRef = balanceRef.toFixed(2);
     balanceRef = parseFloat(balanceRef);
 
-    totalRef = totalRef.toFixed(2);
-    totalRef = parseFloat(totalRef);
-
     invested = invested.toFixed(2);
     invested = parseFloat(invested);
 
-    withdrawn = withdrawn.toFixed(2);
-    withdrawn = parseFloat(withdrawn);
-
     my = my.toFixed(2);
     my = parseFloat(my);
-
-    var imageUSDT = "https://coin.top/production/logo/usdtlogo.png";
-    var imageSITE = "https://coin.top/production/upload/logo/TDDkSxfkN5DbqXK3tHSZFXRMcT9aS6m9qz.png";
 
     return (
 
@@ -172,17 +166,46 @@ export default class Oficina extends Component {
           <h3 className="white"><i className="fa fa-user mr-2" aria-hidden="true"></i><span style={{'fontWeight': 'bold'}}>
           Mi Oficina:</span> <br></br>
           <span style={{'fontSize': '11px'}}>{direccion}</span></h3><br></br>
-          <h3 className="white" style={{'fontWeight': 'bold'}}><i className="fa fa-users mr-2" aria-hidden="true"></i>Link de referido:</h3>
-          <h6 className="white" style={{'padding': '1.5em', 'fontSize': '11px'}}><a href={link}>{link}</a> <br /><br />
-          <CopyToClipboard text={link}>
-            <button type="button" className="btn btn-info">COPIAR</button>
-          </CopyToClipboard>
-          </h6>
-          <hr></hr>
+          <div className="row text-center">
+            <div className="col-md-6" >
+              <h3 className="white" style={{'fontWeight': 'bold'}}><i className="fa fa-arrow-left mr-2" aria-hidden="true"></i>Mano izquierda</h3>
+              <h6 className="white" style={{'padding': '1.5em', 'fontSize': '11px'}}><a href={link}>{link}</a> <br /><br />
+              <CopyToClipboard text={link}>
+                <button type="button" className="btn btn-info">COPIAR</button>
+              </CopyToClipboard>
+              </h6>
+              <hr></hr>
+            </div>
+            <div className="col-md-6" >
+              <h3 className="white" style={{'fontWeight': 'bold'}}>Mano derecha <i className="fa fa-arrow-right mr-2" aria-hidden="true"></i></h3>
+              <h6 className="white" style={{'padding': '1.5em', 'fontSize': '11px'}}><a href={link2}>{link2}</a> <br /><br />
+              <CopyToClipboard text={link2}>
+                <button type="button" className="btn btn-info">COPIAR</button>
+              </CopyToClipboard>
+              </h6>
+              <hr></hr>
+            </div>
+          </div>
 
         </header>
 
         <div className="row text-center">
+          <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-delay="0.1s" data-wow-duration="1s">
+            <div className="box">
+              <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
+              <p className="description">Equipo Izquierdo ()</p>
+              <h4 className="title"><a href="#services">{my} puntos</a></h4>
+
+            </div>
+          </div>
+          <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-delay="0.1s" data-wow-duration="1s">
+            <div className="box">
+              <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
+              <p className="description">Equipo Derecho ()</p>
+              <h4 className="title"><a href="#services"> {balanceRef} puntos</a></h4>
+
+            </div>
+          </div>
 
           <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
@@ -193,78 +216,10 @@ export default class Oficina extends Component {
           </div>
           <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
-              <div className="icon"><i className="ion-ios-bookmarks-outline" style={{color: '#e9bf06'}}></i></div>
-              <h4 className="title"><a href="#services">{totalRef} USDT</a></h4> (SITE {(this.state.totalRef/this.state.precioSITE).toFixed(8)})
-              <p className="description">Total ganancias por referidos</p>
-            </div>
-          </div>
-
-          <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-delay="0.1s" data-wow-duration="1s">
-            <div className="box">
-              <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
-              <p className="description">Mi balance</p>
-              <h4 className="title"><a href="#services">{my} USDT</a></h4> (SITE {(this.state.my/this.state.precioSITE).toFixed(8)})
-
-            </div>
-          </div>
-          <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-delay="0.1s" data-wow-duration="1s">
-            <div className="box">
-              <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
-              <p className="description">Balance por referidos</p>
-              <h4 className="title"><a href="#services"> {balanceRef} USDT</a></h4> (SITE {(this.state.balanceRef/this.state.precioSITE).toFixed(8)})
-
-            </div>
-          </div>
-
-          <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-delay="0.1s" data-wow-duration="1s">
-            <div className="box">
               <div className="icon"><i className="ion-ios-speedometer-outline" style={{color:'#41cf2e'}}></i></div>
               <h4 className="title"><a href="#services">Disponible</a></h4>
               <p className="description">{available} USDT</p> (SITE {(available/this.state.precioSITE).toFixed(8)})
               <button type="button" className="btn btn-info d-block text-center mx-auto mt-1" onClick={() => this.withdraw()}>Retirar</button>
-            </div>
-          </div>
-          <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-delay="0.2s" data-wow-duration="1s">
-            <div className="box">
-              <div className="icon"><i className="ion-ios-clock-outline" style={{color: '#4680ff'}}></i></div>
-              <h4 className="title"><a href="#services">Retirado</a></h4>
-              <p className="description">{withdrawn} USDT</p> (SITE {(this.state.withdrawn/this.state.precioSITE).toFixed(8)})
-            </div>
-          </div>
-
-        </div>
-
-
-        <div className="row text-center">
-
-          <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
-            <div className="box">
-
-            <img src={imageSITE} alt="usdt logo trx" width="50" />
-            
-              <input id="amountSITE" type="number" className="form-control mb-20 text-center" value={this.state.valueSITE} onChange={this.handleChangeSITE}  ></input>
-              <div className="input-group-append">
-              
-            </div>
-              <h4 className="title"> {this.state.valueSITE} SITE <br />
-              =<br />
-              {(this.state.valueSITE*this.state.precioSITE).toFixed(2)} USDT
-
-
-              </h4> 
-
-            </div>
-          </div>
-          <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
-            <div className="box">
-              <img src={imageUSDT} alt="usdt logo trx" width="50" />
-              <input id="amountSITE" type="number" className="form-control mb-20 text-center" value={this.state.valueUSDT} onChange={this.handleChangeUSDT}  ></input>
-              <h4 className="title"> {this.state.valueUSDT} USDT<br />
-              =<br />
-              {(this.state.valueUSDT/this.state.precioSITE).toFixed(8)} SITE
-
-
-              </h4> 
             </div>
           </div>
 

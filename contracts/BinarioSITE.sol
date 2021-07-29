@@ -47,7 +47,7 @@ contract SITEBinary is Ownable{
 
   uint[5] public porcientos = [5, 0, 0, 0, 0];
 
-  uint[15] public plans = [100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8];
+  uint[16] public plans = [0, 100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,20000*10**8, 30000*10**8, 50000*10**8, 100000*10**8, 1000000*10**8, 2000000*10**8, 3000000*10**8, 5000000*10**8, 1000000000*10**8, 10000*10**8];
 
   uint public basePorcientos = 1000;
 
@@ -63,6 +63,11 @@ contract SITEBinary is Ownable{
 
 
   mapping (address => Investor) public investors;
+  mapping(uint => address) public idToAddress;
+  mapping(address => uint) public addressToId;
+  
+  uint lastUserId = 2;
+
 
   constructor(address _tokenTRC20) public {
     USDT_Contract = TRC20_Interface(_tokenTRC20);
@@ -73,6 +78,9 @@ contract SITEBinary is Ownable{
     usuario.sponsor = address(0);
 
     totalInvestors++;
+
+    idToAddress[1] = msg.sender;
+    addressToId[msg.sender] = 1;
 
   }
 
@@ -116,6 +124,10 @@ contract SITEBinary is Ownable{
   
   function tiempo() public view returns (uint){
      return dias.mul(86400);
+  }
+
+  function verPlan(uint _nivel) public view returns (uint){
+    return plans[_nivel];
   }
 
   function setPorcientos(uint _value_1, uint _value_2, uint _value_3, uint _value_4, uint _value_5) public onlyOwner returns(uint, uint, uint, uint, uint){
@@ -184,6 +196,17 @@ contract SITEBinary is Ownable{
     return res;
   }
 
+  function columnBinary (uint _hand, address _who) public view returns(address) {
+
+    if (_hand == 0) {
+      return investors[_who].leftHand[0].referer;
+      
+    } else {
+      return investors[_who].rigthHand[0].referer;
+    }
+    
+  }
+
   function rewardReferers(address yo, uint amount, uint[5] memory array) internal {
 
     address[5] memory referi = column(yo);
@@ -249,6 +272,11 @@ contract SITEBinary is Ownable{
       
       totalInvestors++;
 
+      idToAddress[lastUserId] = msg.sender;
+      addressToId[msg.sender] = lastUserId;
+      
+      lastUserId++;
+
     }else{
 
       if (usuario.sponsor != address(0) && sisReferidos ){
@@ -278,11 +306,11 @@ contract SITEBinary is Ownable{
     require( USDT_Contract.allowance(msg.sender, address(this)) >= _pay, "aprovado insuficiente");
     require( USDT_Contract.transferFrom(msg.sender, address(this), _pay), "saldo insuficiente" );
     
+    usuario.plan = _plan;
 
      if (usuario.sponsor != address(0) && sisReferidos ){
        rewardReferers(msg.sender, _value, porcientos);
      }
-
 
     usuario.invested += _value;
     totalInvested += _value;
