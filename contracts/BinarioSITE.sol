@@ -41,6 +41,8 @@ contract SITEBinary is Ownable{
   uint public MIN_RETIRO = 70*10**8;
   uint public MAX_RETIRO = 500000*10**8;
 
+  uint public rate = 1650000;
+
   uint[5] public primervez = [30, 0, 0, 0, 0];
 
   uint[5] public porcientos = [5, 0, 0, 0, 0];
@@ -71,6 +73,12 @@ contract SITEBinary is Ownable{
     usuario.sponsor = address(0);
 
     totalInvestors++;
+
+  }
+
+  function setRate(uint _rate) public onlyOwner {
+
+    rate = _rate;
 
   }
 
@@ -215,9 +223,10 @@ contract SITEBinary is Ownable{
     require( usuario.inicio.add(tiempo()) <= block.timestamp, "no se ha terminado tu plan actual");
 
     uint _value = plans[_plan];
+    uint _pay = _value.mul(10**8).div(rate);
 
-    require( USDT_Contract.allowance(msg.sender, address(this)) >= _value, "aprovado insuficiente");
-    require( USDT_Contract.transferFrom(msg.sender, address(this), _value), "saldo insuficiente" );
+    require( USDT_Contract.allowance(msg.sender, address(this)) >= _pay, "aprovado insuficiente");
+    require( USDT_Contract.transferFrom(msg.sender, address(this), _pay), "saldo insuficiente" );
     
 
     if (!usuario.registered){
@@ -264,9 +273,10 @@ contract SITEBinary is Ownable{
     require (_plan > usuario.plan);
 
     uint _value = plans[_plan].sub(plans[usuario.plan]);
+    uint _pay = _value.mul(10**8).div(rate);
 
-    require( USDT_Contract.allowance(msg.sender, address(this)) >= _value, "aprovado insuficiente");
-    require( USDT_Contract.transferFrom(msg.sender, address(this), _value), "saldo insuficiente" );
+    require( USDT_Contract.allowance(msg.sender, address(this)) >= _pay, "aprovado insuficiente");
+    require( USDT_Contract.transferFrom(msg.sender, address(this), _pay), "saldo insuficiente" );
     
 
      if (usuario.sponsor != address(0) && sisReferidos ){
@@ -391,12 +401,14 @@ contract SITEBinary is Ownable{
 
     uint amount = withdrawable(msg.sender)+usuario.balanceRef;
 
+    uint _pay = amount.mul(10**8).div(rate);
+
     require ( USDT_Contract.balanceOf(address(this)) >= amount, "The contract has no balance");
     require ( amount >= MIN_RETIRO, "The minimum withdrawal limit reached");
     require ( amount <= MAX_RETIRO, "The maximum withdrawal limit reached");
     require ( usuario.withdrawn+amount <= MAX_RETIRO, "The maximum withdrawal limit reached");
 
-    require ( USDT_Contract.transfer(msg.sender,amount), "whitdrawl Fail" );
+    require ( USDT_Contract.transfer(msg.sender,_pay), "whitdrawl Fail" );
 
     profit();
 

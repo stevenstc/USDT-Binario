@@ -20,7 +20,8 @@ export default class CrowdFunding extends Component {
       balanceTRX: "Cargando...",
       balanceUSDT: "Cargando...",
       maxButton:"Cargando...",
-      precioSITE: 0
+      precioSITE: 0,
+      valueUSDT: 1
 
     };
 
@@ -29,17 +30,22 @@ export default class CrowdFunding extends Component {
     this.getMax = this.getMax.bind(this);
 
     this.rateSITE = this.rateSITE.bind(this);
+    this.handleChangeUSDT = this.handleChangeUSDT.bind(this);
+  }
+
+  handleChangeUSDT(event) {
+    this.setState({valueUSDT: event.target.value});
   }
 
   async componentDidMount() {
     await Utils.setContract(window.tronWeb, contractAddress);
     await this.estado();
-    setInterval(() => this.estado(),2*1000);
+    setInterval(() => this.estado(),1*1000);
   };
 
   async rateSITE(){
     var proxyUrl = cons.proxy;
-    var apiUrl = 'https://servicios-pesodigital.herokuapp.com/api/v1/servicio/precio/SITE';
+    var apiUrl = cons.PRE;
     const response = await fetch(proxyUrl+apiUrl)
     .catch(error =>{console.error(error)})
     const json = await response.json();
@@ -123,13 +129,13 @@ export default class CrowdFunding extends Component {
     }
     
 
-    var dias = 185;//await Utils.contract.tiempo().call();
+    var dias = 365;//await Utils.contract.tiempo().call();
 
     //var velocidad = await Utils.contract.velocidad().call();
 
     //dias = (parseInt(dias)/86400)*velocidad;
 
-    var porcentaje = 155;//await Utils.contract.porcent().call();
+    var porcentaje = 200;//await Utils.contract.porcent().call();
 
     porcentaje = parseInt(porcentaje);
 
@@ -139,7 +145,7 @@ export default class CrowdFunding extends Component {
     var balanceTRX = await window.tronWeb.trx.getBalance();
     balanceTRX = balanceTRX/10**6;
 
-    var contractUSDT = await window.tronWeb.contract().at("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t");
+    var contractUSDT = await window.tronWeb.contract().at(cons.USDT);
 
     var balanceUSDT = await contractUSDT.balanceOf(accountAddress).call();
 
@@ -169,7 +175,7 @@ export default class CrowdFunding extends Component {
 
   async deposit() {
 
-    const {  deposito, decimales, balanceSite, balanceTRX, maxAlcanzado } = this.state;
+    const {  deposito, decimales, balanceSite, balanceTRX, maxAlcanzado, valueUSDT } = this.state;
 
     var { min, max } = this.state
 
@@ -191,13 +197,12 @@ export default class CrowdFunding extends Component {
 
     var tronUSDT = await window.tronWeb;
     var contractUSDT = await tronUSDT.contract().at(cons.USDT);
+    var aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
+    aprovado = parseInt(aprovado._hex);
 
-    if (deposito === "Registrar" && balanceTRX >= 50){
+    if (aprovado <= 0 && balanceTRX >= 50){
       document.getElementById("amount").value = "";
       await contractUSDT.approve(contractAddress, "115792089237316195423570985008687907853269984665640564039457584007913129639935").send();
-    }else{
-      var aprovado = await contractUSDT.allowance(accountAddress, contractAddress).call();
-      aprovado = parseInt(aprovado._hex);
     }
 
     if ( aprovado >= amount && 
@@ -205,8 +210,7 @@ export default class CrowdFunding extends Component {
       balanceSite >= amount && 
       amount >= min && 
       amount <= max && 
-      balanceTRX >= 50 && 
-      deposito !== "Registrar" &&
+      balanceTRX >= 50 &&
       maxAlcanzado
       ){
 
@@ -252,7 +256,7 @@ export default class CrowdFunding extends Component {
     
         if ( amount >= min ){
 
-          await Utils.contract.deposit(amount, sponsor).send();
+          await Utils.contract.buyPlan(valueUSDT, sponsor,0).send();
 
           document.getElementById("amount").value = "";
 
@@ -312,7 +316,7 @@ export default class CrowdFunding extends Component {
     return (
       <div className="card wow bounceInUp text-center">
         <div className="card-body">
-          <h5 className="card-title" id="contract" >Contrato V 1.0</h5>
+          <h5 className="card-title" id="contract" >Contrato V 2.0</h5>
 
           <table className="table borderless">
             <tbody>
@@ -342,11 +346,14 @@ export default class CrowdFunding extends Component {
             USDT: <strong>{(this.state.balanceUSDT*1).toFixed(6)}</strong><br />
           </p>
 
-          <div className="input-group mb-3">
-            <input id="amount" type="number" className="form-control mb-20 text-center" placeholder={min}></input>
-            <div className="input-group-append">
-              <button className="btn btn-outline-secondary" type="button" onClick={this.getMax}>{this.state.maxButton}</button>
-            </div>
+          <div className="input-group mb-3 text-center">
+            <select id="amount" name="select" className="form-control mb-20 " value={this.state.valueUSDT} onChange={this.handleChangeUSDT} >
+              <option value="0">Plan Staking 100</option>
+              <option value="1" selected>Plan Staking 300</option>
+              <option value="2">Plan Staking 500</option>
+              <option value="3">Plan Staking 1.000</option>
+              <option value="4">Plan Staking 10.000</option>
+            </select>
           </div>
 
             <p className="card-text">Recomendamos tener más de 150 TRX para ejecutar las transacciones correctamente</p>

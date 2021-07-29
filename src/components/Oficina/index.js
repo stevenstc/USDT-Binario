@@ -50,7 +50,7 @@ export default class Oficina extends Component {
 
   async rateSITE(){
     var proxyUrl = cons.proxy;
-    var apiUrl = 'https://servicios-pesodigital.herokuapp.com/api/v1/servicio/precio/SITE';
+    var apiUrl = cons.PRE;
     const response = await fetch(proxyUrl+apiUrl)
     .catch(error =>{console.error(error)})
     const json = await response.json();
@@ -85,7 +85,7 @@ export default class Oficina extends Component {
 
     let direccion = await window.tronWeb.trx.getAccount();
     let esto = await Utils.contract.investors(direccion.address).call();
-    let My = await Utils.contract.MYwithdrawable().call();
+    let My = await Utils.contract.withdrawable(direccion.address).call();
     
     var tronUSDT = await window.tronWeb;
     var contractUSDT = await tronUSDT.contract().at(cons.USDT);
@@ -143,22 +143,22 @@ export default class Oficina extends Component {
     var { balanceRef, totalRef, invested,  withdrawn , my, direccion, link} = this.state;
 
     var available = (balanceRef+my);
-    available = available.toFixed(8);
+    available = available.toFixed(2);
     available = parseFloat(available);
 
-    balanceRef = balanceRef.toFixed(8);
+    balanceRef = balanceRef.toFixed(2);
     balanceRef = parseFloat(balanceRef);
 
-    totalRef = totalRef.toFixed(8);
+    totalRef = totalRef.toFixed(2);
     totalRef = parseFloat(totalRef);
 
-    invested = invested.toFixed(8);
+    invested = invested.toFixed(2);
     invested = parseFloat(invested);
 
-    withdrawn = withdrawn.toFixed(8);
+    withdrawn = withdrawn.toFixed(2);
     withdrawn = parseFloat(withdrawn);
 
-    my = my.toFixed(8);
+    my = my.toFixed(2);
     my = parseFloat(my);
 
     var imageUSDT = "https://coin.top/production/logo/usdtlogo.png";
@@ -187,14 +187,14 @@ export default class Oficina extends Component {
           <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-analytics-outline" style={{color: '#ff689b'}}></i></div>
-              <h4 className="title"><a href="#services">{invested} SITE</a></h4> (${(this.state.invested*this.state.precioSITE).toFixed(2)})
+              <h4 className="title"><a href="#services">{invested} USDT</a></h4> (SITE {(this.state.invested/this.state.precioSITE).toFixed(8)})
               <p className="description">Total invertido</p>
             </div>
           </div>
           <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-bookmarks-outline" style={{color: '#e9bf06'}}></i></div>
-              <h4 className="title"><a href="#services">{totalRef} SITE</a></h4> (${(this.state.totalRef*this.state.precioSITE).toFixed(2)})
+              <h4 className="title"><a href="#services">{totalRef} USDT</a></h4> (SITE {(this.state.totalRef/this.state.precioSITE).toFixed(8)})
               <p className="description">Total ganancias por referidos</p>
             </div>
           </div>
@@ -203,7 +203,7 @@ export default class Oficina extends Component {
             <div className="box">
               <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
               <p className="description">Mi balance</p>
-              <h4 className="title"><a href="#services">{my} SITE</a></h4> (${(this.state.my*this.state.precioSITE).toFixed(2)})
+              <h4 className="title"><a href="#services">{my} USDT</a></h4> (SITE {(this.state.my/this.state.precioSITE).toFixed(8)})
 
             </div>
           </div>
@@ -211,7 +211,7 @@ export default class Oficina extends Component {
             <div className="box">
               <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
               <p className="description">Balance por referidos</p>
-              <h4 className="title"><a href="#services"> {balanceRef} SITE</a></h4> (${(this.state.balanceRef*this.state.precioSITE).toFixed(2)})
+              <h4 className="title"><a href="#services"> {balanceRef} USDT</a></h4> (SITE {(this.state.balanceRef/this.state.precioSITE).toFixed(8)})
 
             </div>
           </div>
@@ -220,7 +220,7 @@ export default class Oficina extends Component {
             <div className="box">
               <div className="icon"><i className="ion-ios-speedometer-outline" style={{color:'#41cf2e'}}></i></div>
               <h4 className="title"><a href="#services">Disponible</a></h4>
-              <p className="description">{available} SITE</p> (${(available*this.state.precioSITE).toFixed(2)})
+              <p className="description">{available} USDT</p> (SITE {(available/this.state.precioSITE).toFixed(8)})
               <button type="button" className="btn btn-info d-block text-center mx-auto mt-1" onClick={() => this.withdraw()}>Retirar</button>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default class Oficina extends Component {
             <div className="box">
               <div className="icon"><i className="ion-ios-clock-outline" style={{color: '#4680ff'}}></i></div>
               <h4 className="title"><a href="#services">Retirado</a></h4>
-              <p className="description">{withdrawn} SITE</p> (${(this.state.withdrawn*this.state.precioSITE).toFixed(2)})
+              <p className="description">{withdrawn} USDT</p> (SITE {(this.state.withdrawn/this.state.precioSITE).toFixed(8)})
             </div>
           </div>
 
