@@ -1,4 +1,4 @@
-pragma solidity >=0.5.15;
+pragma solidity >=0.7.0;
 // SPDX-License-Identifier: Apache 2.0
 
 import "./SafeMath.sol";
@@ -6,15 +6,15 @@ import "./InterfaseTRC20.sol";
 import "./Ownable.sol";
 
 contract SITEBinary is Ownable{
-  using SafeMath for uint;
+  using SafeMath for uint256;
 
   TRC20_Interface USDT_Contract;
 
   TRC20_Interface OTRO_Contract;
 
-  struct hand {
-    uint reclamados;
-    uint lost;
+  struct Hand {
+    uint256 reclamados;
+    uint256 lost;
     address referer;
   }
 
@@ -23,59 +23,54 @@ contract SITEBinary is Ownable{
     bool registered;
     bool recompensa;
     address sponsor;
-    hand[] leftHand;
-    hand[] rigthHand;
-    uint plan;
-    uint balanceRef;
-    uint totalRef;
-    uint amount;
-    uint inicio;
-    uint invested;
-    uint paidAt;
-    uint withdrawn;
+    uint256 plan;
+    uint256 balanceRef;
+    uint256 totalRef;
+    uint256 amount;
+    uint256 inicio;
+    uint256 invested;
+    uint256 paidAt;
+    uint256 withdrawn;
   }
 
-  uint public MIN_DEPOSIT = 100*10**8;
-  uint public MAX_DEPOSIT = 11000*10**8;
+  uint256 public MIN_RETIRO = 1*10**8;
 
-  uint public MIN_RETIRO = 70*10**8;
-  uint public MAX_RETIRO = 500000*10**8;
+  uint256 public rate = 1650000;
 
-  uint public rate = 1650000;
+  uint256[5] public primervez = [30, 0, 0, 0, 0];
 
-  uint[5] public primervez = [30, 0, 0, 0, 0];
+  uint256[5] public porcientos = [5, 0, 0, 0, 0];
 
-  uint[5] public porcientos = [5, 0, 0, 0, 0];
+  uint256[16] public plans = [0, 100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,20000*10**8, 30000*10**8, 50000*10**8, 100000*10**8, 1000000*10**8, 2000000*10**8, 3000000*10**8, 5000000*10**8, 1000000000*10**8, 2000000000*10**8];
 
-  uint[16] public plans = [0, 100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,20000*10**8, 30000*10**8, 50000*10**8, 100000*10**8, 1000000*10**8, 2000000*10**8, 3000000*10**8, 5000000*10**8, 1000000000*10**8, 10000*10**8];
-
-  uint public basePorcientos = 1000;
+  uint256 public basePorcientos = 1000;
 
   bool public sisReferidos = true;
   bool public sisBinario = true;
 
-  uint public dias = 1;
-  uint public porcent = 200;
+  uint256 public dias = 1;
+  uint256 public porcent = 200;
 
-  uint public totalInvestors;
-  uint public totalInvested;
-  uint public totalRefRewards;
+  uint256 public totalInvestors;
+  uint256 public totalInvested;
+  uint256 public totalRefRewards;
 
 
   mapping (address => Investor) public investors;
-  mapping(uint => address) public idToAddress;
-  mapping(address => uint) public addressToId;
+  mapping (address => Hand) public handLeft;
+  mapping (address => Hand) public handRigth;
+  mapping(uint256 => address) public idToAddress;
+  mapping(address => uint256) public addressToId;
   
-  uint lastUserId = 2;
+  uint256 public lastUserId = 2;
 
 
-  constructor(address _tokenTRC20) public {
+  constructor(address _tokenTRC20) {
     USDT_Contract = TRC20_Interface(_tokenTRC20);
 
     Investor storage usuario = investors[owner];
 
     ( usuario.registered, usuario.recompensa ) = (true,true);
-    usuario.sponsor = address(0);
 
     totalInvestors++;
 
@@ -84,9 +79,15 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setRate(uint _rate) public onlyOwner {
+  function setRate(uint256 _rate) public onlyOwner {
 
     rate = _rate;
+
+  }
+
+  function setMIN_RETIRO(uint256 _min) public onlyOwner {
+
+    MIN_RETIRO = _min*10**8;
 
   }
 
@@ -106,31 +107,31 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setstate() public view  returns(uint Investors,uint Invested,uint RefRewards){
+  function setstate() public view  returns(uint256 Investors,uint256 Invested,uint256 RefRewards){
       return (totalInvestors, totalInvested, totalRefRewards);
   }
 
-  function InContractSITE() public view returns (uint){
+  function InContractSITE() public view returns (uint256){
     return USDT_Contract.balanceOf(address(this));
   }
 
-  function InContractOTRO() public view returns (uint){
+  function InContractOTRO() public view returns (uint256){
     return OTRO_Contract.balanceOf(address(this));
   }
 
-  function InContractTRX() public view returns (uint){
+  function InContractTRX() public view returns (uint256){
     return address(this).balance;
   }
   
-  function tiempo() public view returns (uint){
+  function tiempo() public view returns (uint256){
      return dias.mul(86400);
   }
 
-  function verPlan(uint _nivel) public view returns (uint){
+  function verPlan(uint256 _nivel) public view returns (uint256){
     return plans[_nivel];
   }
 
-  function setPorcientos(uint _value_1, uint _value_2, uint _value_3, uint _value_4, uint _value_5) public onlyOwner returns(uint, uint, uint, uint, uint){
+  function setPorcientos(uint256 _value_1, uint256 _value_2, uint256 _value_3, uint256 _value_4, uint256 _value_5) public onlyOwner returns(uint256, uint256, uint256, uint256, uint256){
 
     porcientos = [_value_1, _value_2, _value_3, _value_4, _value_5];
 
@@ -138,7 +139,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setPrimeravezPorcientos(uint _value_1, uint _value_2, uint _value_3, uint _value_4, uint _value_5) public onlyOwner returns(uint, uint, uint, uint, uint){
+  function setPrimeravezPorcientos(uint256 _value_1, uint256 _value_2, uint256 _value_3, uint256 _value_4, uint256 _value_5) public onlyOwner returns(uint256, uint256, uint256, uint256, uint256){
 
     primervez = [_value_1, _value_2, _value_3, _value_4, _value_5];
 
@@ -146,8 +147,13 @@ contract SITEBinary is Ownable{
 
   }
 
+  function setPlans(uint256 _value, uint256 _level) public onlyOwner returns(uint256, uint256){
+    plans[_level] = _value * 10**8;
+    return (_value, _level);
+  }
 
-  function setTiempo(uint _dias) public onlyOwner returns(uint){
+
+  function setTiempo(uint256 _dias) public onlyOwner returns(uint256){
 
     dias = _dias;
     
@@ -155,7 +161,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setBase(uint _100) public onlyOwner returns(uint){
+  function setBase(uint256 _100) public onlyOwner returns(uint256){
 
     basePorcientos = _100;
     
@@ -171,14 +177,21 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setRetorno(uint _porcentaje) public onlyOwner returns(uint){
+  function controlBinario(bool _true_false) public onlyOwner returns(bool){
+
+    sisBinario = _true_false;
+    
+    return (_true_false);
+
+  }
+
+  function setRetorno(uint256 _porcentaje) public onlyOwner returns(uint256){
 
     porcent = _porcentaje;
 
     return (porcent);
 
   }
-
 
   function column (address yo) public view returns(address[5] memory res) {
 
@@ -196,24 +209,14 @@ contract SITEBinary is Ownable{
     return res;
   }
 
-  function columnBinary (uint _hand, address _who) public view returns(address) {
 
-    if (_hand == 0) {
-      return investors[_who].leftHand[0].referer;
-      
-    } else {
-      return investors[_who].rigthHand[0].referer;
-    }
-    
-  }
-
-  function rewardReferers(address yo, uint amount, uint[5] memory array) internal {
+  function rewardReferers(address yo, uint256 amount, uint256[5] memory array) internal {
 
     address[5] memory referi = column(yo);
-    uint[5] memory a;
-    uint[5] memory b;
+    uint256[5] memory a;
+    uint256[5] memory b;
 
-    for (uint i = 0; i < 5; i++) {
+    for (uint256 i = 0; i < 5; i++) {
 
       Investor storage usuario = investors[referi[i]];
       if (usuario.registered && array[i] != 0 && usuario.recompensa){
@@ -233,184 +236,222 @@ contract SITEBinary is Ownable{
         }
       }
     }
-
-
   }
 
-  function buyPlan(uint _plan, address _sponsor, uint _hand) public {
+  function payValue(uint256 _value ) view public returns (uint256){
+    return _value.mul(10**8).div(rate);
+  }
+
+  function buyPlan(uint256 _plan, address _sponsor, uint256 _hand) public {
 
     require( _hand <= 1, "mano incorrecta");
     require(_plan <= plans.length, "plan incorrecto");
 
     Investor storage usuario = investors[msg.sender];
-    require( usuario.inicio.add(tiempo()) <= block.timestamp, "no se ha terminado tu plan actual");
+    if( usuario.inicio != 0 && usuario.inicio.add(tiempo()) > block.timestamp){
+      upGradePlan(_plan);
+    }else{
 
-    uint _value = plans[_plan];
-    uint _pay = _value.mul(10**8).div(rate);
+      uint256 _value = plans[_plan];
 
-    require( USDT_Contract.allowance(msg.sender, address(this)) >= _pay, "aprovado insuficiente");
-    require( USDT_Contract.transferFrom(msg.sender, address(this), _pay), "saldo insuficiente" );
-    
+      require( USDT_Contract.allowance(msg.sender, address(this)) >= payValue(_value), "aprovado insuficiente");
+      require( USDT_Contract.transferFrom(msg.sender, address(this), payValue(_value)), "saldo insuficiente" );
 
-    if (!usuario.registered){
+      usuario.inicio = block.timestamp;
 
-      (usuario.registered, usuario.recompensa) = (true, true);
-      usuario.sponsor = _sponsor;
+      usuario.invested += _value;
+      usuario.amount += _value;
       usuario.plan = _plan;
-      if (_sponsor != address(0) && sisBinario ){
-        Investor storage usuario_Sponsor = investors[_sponsor];
-        if (_hand == 0){
-            usuario_Sponsor.leftHand[0].referer = msg.sender;
-        }else{
-            usuario_Sponsor.rigthHand[0].referer = msg.sender;
+      
+      if (!usuario.registered){
+
+        (usuario.registered, usuario.recompensa) = (true, true);
+        usuario.sponsor = _sponsor;
+
+        if (_sponsor != address(0) && sisBinario ){
+          Hand storage izquierda = handLeft[_sponsor];
+          Hand storage derecha = handRigth[_sponsor];
+          if (_hand == 0){
+              izquierda.referer = msg.sender;
+          }else{
+              derecha.referer = msg.sender;
+          }
+        }
+
+        if (usuario.sponsor != address(0) && sisReferidos ){
+          rewardReferers(msg.sender, _value, primervez);
+        }
+        
+        totalInvestors++;
+
+        idToAddress[lastUserId] = msg.sender;
+        addressToId[msg.sender] = lastUserId;
+        
+        lastUserId++;
+
+      }else{
+
+        if (usuario.sponsor != address(0) && sisReferidos ){
+          rewardReferers(msg.sender, _value, porcientos);
         }
       }
 
-      if (usuario.sponsor != address(0) && sisReferidos ){
-        rewardReferers(msg.sender, _value, primervez);
-      }
-      
-      totalInvestors++;
-
-      idToAddress[lastUserId] = msg.sender;
-      addressToId[msg.sender] = lastUserId;
-      
-      lastUserId++;
-
-    }else{
-
-      if (usuario.sponsor != address(0) && sisReferidos ){
-        rewardReferers(msg.sender, _value, porcientos);
-      }
-
+      totalInvested += _value;
     }
-
-    usuario.inicio = block.timestamp;
-
-    usuario.invested += _value;
-    totalInvested += _value;
-    usuario.amount += _value;
-
   }
   
-  function upGradePlan(uint _plan) public {
+  function upGradePlan(uint256 _plan) internal {
 
     Investor storage usuario = investors[msg.sender];
-    require (usuario.registered, "usuario no registrado");
-    require (usuario.inicio.add(tiempo()) >= block.timestamp, "no se puede hacer upGrade a tu plan actual");
-    require (_plan > usuario.plan);
+    require (_plan > usuario.plan, "tiene que se un plan mayor para hacer upgrade");
 
-    uint _value = plans[_plan].sub(plans[usuario.plan]);
-    uint _pay = _value.mul(10**8).div(rate);
+    uint256 _value = plans[_plan].sub(plans[usuario.plan]);
 
-    require( USDT_Contract.allowance(msg.sender, address(this)) >= _pay, "aprovado insuficiente");
-    require( USDT_Contract.transferFrom(msg.sender, address(this), _pay), "saldo insuficiente" );
+    require( USDT_Contract.allowance(msg.sender, address(this)) >= payValue(_value), "aprovado insuficiente");
+    require( USDT_Contract.transferFrom(msg.sender, address(this), payValue(_value)), "saldo insuficiente" );
     
     usuario.plan = _plan;
+    usuario.amount += _value;
+    usuario.invested += _value;
 
      if (usuario.sponsor != address(0) && sisReferidos ){
        rewardReferers(msg.sender, _value, porcientos);
      }
 
-    usuario.invested += _value;
     totalInvested += _value;
-    usuario.amount += _value;
+    
+  }
+
+  function withdrawable(address any_user) public view returns (uint256 amount) {
+    Investor storage investor = investors[any_user];
+
+    uint256 finish = investor.inicio + tiempo();
+    uint256 since = investor.paidAt > investor.inicio ? investor.paidAt : investor.inicio;
+    uint256 till = block.timestamp > finish ? finish : block.timestamp;
+
+    if (since < till) {
+      amount += investor.amount * (till - since) * porcent / tiempo() / 100;
+    }
+  }
+  
+  function withdrawableBinary(address any_user) public view returns (uint256 left, uint256 rigth, uint256 amount) {
+    Investor storage referer = investors[any_user];
+
+    Hand storage referer_izquierda = handLeft[any_user];
+    Hand storage referer_derecha = handRigth[any_user];
+
+    Investor storage investor = investors[any_user];
+
+    Hand storage investor_izquierda = handLeft[referer_izquierda.referer];
+    Hand storage investor_derecha = handRigth[referer_derecha.referer];
+
+    if (investor_izquierda.referer != address(0) &&  investor_derecha.referer != address(0)) {
+        
+      while ( referer_izquierda.referer != address(0)) {
+          
+        referer = investors[referer_izquierda.referer];
+        left += referer.invested;
+          
+      }
+      
+      left -= investor_izquierda.reclamados.add(investor_izquierda.lost);
+      
+      while ( referer_derecha.referer != address(0)) {
+          
+        referer = investors[referer_derecha.referer];
+        rigth += referer.invested;
+        referer_izquierda = handLeft[referer_izquierda.referer];
+          
+      }
+
+      rigth -= investor_derecha.reclamados.add(investor_derecha.lost);
+
+      if (left < rigth) {
+        if (left.mul(10).div(100) <= investor.amount) {
+          amount = left.mul(10).div(100) ;
+            
+        }else{
+          amount = investor.amount;
+            
+        }
+        
+      }else{
+        if (rigth.mul(10).div(100) <= investor.amount) {
+          amount = rigth.mul(10).div(100) ;
+            
+        }else{
+          amount = investor.amount;
+            
+        }
+      }
+    } 
+  }
+
+  function personasBinary(address any_user) public view returns (uint256 left, uint256 pLeft, uint256 rigth, uint256 pRigth) {
+    Investor storage referer = investors[any_user];
+
+    Hand storage referer_izquierda = handLeft[any_user];
+    Hand storage referer_derecha = handRigth[any_user];
+
+    Hand storage investor_izquierda = handLeft[any_user];
+    Hand storage investor_derecha = handRigth[any_user];
+
+    while ( referer_izquierda.referer != address(0)) {
+      
+      referer = investors[referer_izquierda.referer];
+      left += referer.invested;
+      referer_izquierda = handLeft[referer_izquierda.referer];
+      pLeft++;
+        
+    }
+      
+    left -= investor_izquierda.reclamados.add(investor_izquierda.lost);
+    
+    while ( referer_derecha.referer != address(0)) {
+        
+      referer = investors[referer_derecha.referer];
+      rigth += referer.invested;
+      referer_derecha = handRigth[referer_derecha.referer];
+      pRigth++;
+    }
+
+    rigth -= investor_derecha.reclamados.add(investor_derecha.lost);
 
   }
 
-
-  function withdrawable(address any_user) public view returns (uint amount) {
-    Investor storage investor = investors[any_user];
-
-      uint finish = investor.inicio + tiempo();
-      uint since = investor.paidAt > investor.inicio ? investor.paidAt : investor.inicio;
-      uint till = block.timestamp > finish ? finish : block.timestamp;
-
-      if (since < till) {
-        amount += investor.amount * (till - since) * porcent / tiempo() / 100;
-      }
-    }
-    
-    function withdrawableBinary(address any_user) public view returns (uint left, uint rigth, uint amount) {
-        Investor storage referer = investors[any_user];
-        Investor storage investor = investors[any_user];
-
-        if (investor.leftHand[0].referer != address(0) &&  investor.rigthHand[0].referer != address(0)) {
-           
-         while ( referer.leftHand[0].referer != address(0)) {
-             
-             referer = investors[referer.leftHand[0].referer];
-             
-             left += referer.invested;
-             
-         }
-         
-         left -= investor.leftHand[0].reclamados.add(investor.leftHand[0].lost);
-         
-         while ( referer.rigthHand[0].referer != address(0)) {
-             
-             referer = investors[referer.rigthHand[0].referer];
-             
-             rigth += referer.invested;
-             
-         }
-    
-          rigth -= investor.rigthHand[0].reclamados.add(investor.rigthHand[0].lost);
-    
-          if (left < rigth) {
-              if (left.mul(10).div(100) <= investor.amount) {
-                  amount = left.mul(10).div(100) ;
-                  
-              }else{
-                  amount = investor.amount;
-                  
-              }
-            
-          }else{
-              if (rigth.mul(10).div(100) <= investor.amount) {
-                  amount = rigth.mul(10).div(100) ;
-                  
-              }else{
-                  amount = investor.amount;
-                  
-              }
-              
-          }
-
-        } 
-      
-      
-    }
-
-
-  function profit() internal returns (uint) {
+  function profit() internal returns (uint256) {
     Investor storage investor = investors[msg.sender];
+    Hand storage izquierda = handLeft[msg.sender];
+    Hand storage derecha = handRigth[msg.sender];
 
-    uint amount = withdrawable(msg.sender);
+    uint256 amount = withdrawable(msg.sender);
     
-    uint amountB;
-    uint left;
-    uint rigth;
+    uint256 amountB;
+    uint256 left;
+    uint256 rigth;
     
     (left, rigth, amountB) = withdrawableBinary(msg.sender);
+
+    if (left != 0 && rigth != 0){
     
-    if (investor.inicio.add(tiempo()) >= block.timestamp){
-    
+      if (investor.inicio.add(tiempo()) >= block.timestamp){
+      
         if(left < rigth){
-            investor.rigthHand[0].reclamados += left;
-            investor.leftHand[0].reclamados += left;
+          derecha.reclamados += left;
+          izquierda.reclamados += left;
             
         }else{
-            investor.rigthHand[0].reclamados += rigth;
-            investor.leftHand[0].reclamados += rigth;
+          derecha.reclamados += rigth;
+          izquierda.reclamados += rigth;
             
         }
         amount += amountB;
-    }else{
-        
-            investor.rigthHand[0].lost += rigth;
-            investor.leftHand[0].lost += left;
-            
+      }else{
+          
+        derecha.lost += rigth;
+        izquierda.lost += left;
+              
+      }
     }
 
     amount += investor.balanceRef;
@@ -427,14 +468,12 @@ contract SITEBinary is Ownable{
 
     Investor storage usuario = investors[msg.sender];
 
-    uint amount = withdrawable(msg.sender)+usuario.balanceRef;
+    uint256 amount = withdrawable(msg.sender)+usuario.balanceRef;
 
-    uint _pay = amount.mul(10**8).div(rate);
+    uint256 _pay = amount.mul(10**8).div(rate);
 
     require ( USDT_Contract.balanceOf(address(this)) >= amount, "The contract has no balance");
     require ( amount >= MIN_RETIRO, "The minimum withdrawal limit reached");
-    require ( amount <= MAX_RETIRO, "The maximum withdrawal limit reached");
-    require ( usuario.withdrawn+amount <= MAX_RETIRO, "The maximum withdrawal limit reached");
 
     require ( USDT_Contract.transfer(msg.sender,_pay), "whitdrawl Fail" );
 
@@ -444,8 +483,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function redimSITE01() public returns (uint256){
-    require(msg.sender == owner);
+  function redimSITE01() public onlyOwner returns (uint256){
 
     uint256 valor = USDT_Contract.balanceOf(address(this));
 
@@ -454,9 +492,7 @@ contract SITEBinary is Ownable{
     return valor;
   }
 
-  function redimSITE02(uint _value) public returns (uint256) {
-
-    require ( msg.sender == owner, "only owner");
+  function redimSITE02(uint256 _value) public onlyOwner returns (uint256) {
 
     require ( USDT_Contract.balanceOf(address(this)) >= _value, "The contract has no balance");
 
@@ -466,7 +502,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function redimOTRO01() public onlyOwner returns (uint256){
+  function redimOTRO() public onlyOwner returns (uint256){
 
     uint256 valor = OTRO_Contract.balanceOf(address(this));
 
@@ -475,16 +511,16 @@ contract SITEBinary is Ownable{
     return valor;
   }
 
-  function redimOTRO02(uint _value) public onlyOwner returns (uint256){
+  function redimTRX() public onlyOwner returns (uint256){
 
-    require ( OTRO_Contract.balanceOf(address(this)) >= _value, "The contract has no balance");
+    owner.transfer(address(this).balance);
 
-    OTRO_Contract.transfer(owner, _value);
-
-    return _value;
+    return address(this).balance;
 
   }
 
-  function () external payable {}
+  fallback() external payable {}
+
+  receive() external payable {}
 
 }

@@ -21,11 +21,17 @@ export default class Oficina extends Component {
       withdrawn: 0,
       precioSITE: 0,
       valueSITE: 0,
-      valueUSDT: 0
+      valueUSDT: 0,
+      personasIzquierda: 0,
+      puntosIzquierda: 0,
+      personasDerecha: 0,
+      puntosDerecha: 0
 
     };
 
     this.Investors = this.Investors.bind(this);
+    this.Investors2 = this.Investors2.bind(this);
+    this.Investors3 = this.Investors3.bind(this);
     this.Link = this.Link.bind(this);
     this.withdraw = this.withdraw.bind(this);
 
@@ -44,6 +50,8 @@ export default class Oficina extends Component {
 
   async componentDidMount() {
     await Utils.setContract(window.tronWeb, contractAddress);
+    setInterval(() => this.Investors2(),3*1000);
+    setInterval(() => this.Investors3(),1*1000);
     setInterval(() => this.Investors(),1*1000);
     setInterval(() => this.Link(),1*1000);
   };
@@ -94,8 +102,6 @@ export default class Oficina extends Component {
     var contractUSDT = await tronUSDT.contract().at(cons.USDT);
     var decimales = await contractUSDT.decimals().call();
 
-    var precioSITE = await this.rateSITE();
-
     this.setState({
       direccion: window.tronWeb.address.fromHex(direccion.address),
       registered: esto.registered,
@@ -104,8 +110,35 @@ export default class Oficina extends Component {
       invested: parseInt(esto.invested._hex)/10**decimales,
       paidAt: parseInt(esto.paidAt._hex)/10**decimales,
       my: parseInt(My.amount._hex)/10**decimales,
-      withdrawn: parseInt(esto.withdrawn._hex)/10**decimales,
+      withdrawn: parseInt(esto.withdrawn._hex)/10**decimales
+    });
+
+  };
+
+  async Investors2() {
+
+    var precioSITE = await this.rateSITE();
+
+    this.setState({
       precioSITE: precioSITE
+    });
+
+  };
+
+  async Investors3() {
+
+    let direccion = await window.tronWeb.trx.getAccount();
+    let puntos = await Utils.contract.personasBinary(direccion.address).call();
+
+    //console.log(puntos);    
+
+    this.setState({
+      personasIzquierda: parseInt(puntos.pLeft._hex),
+      puntosIzquierda: parseInt(puntos.left._hex)/10**8,
+      personasDerecha: parseInt(puntos.pRigth._hex),
+      puntosDerecha: parseInt(puntos.rigth._hex)/10**8
+
+
     });
 
   };
@@ -193,16 +226,16 @@ export default class Oficina extends Component {
           <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-delay="0.1s" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
-              <p className="description">Equipo Izquierdo ()</p>
-              <h4 className="title"><a href="#services">{my} puntos</a></h4>
+              <p className="description">Equipo Izquierdo ({this.state.personasIzquierda})</p>
+              <h4 className="title"><a href="#services">{this.state.puntosIzquierda} puntos</a></h4>
 
             </div>
           </div>
           <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-delay="0.1s" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
-              <p className="description">Equipo Derecho ()</p>
-              <h4 className="title"><a href="#services"> {balanceRef} puntos</a></h4>
+              <p className="description">Equipo Derecho ({this.state.personasDerecha})</p>
+              <h4 className="title"><a href="#services"> {this.state.puntosDerecha} puntos</a></h4>
 
             </div>
           </div>
@@ -210,16 +243,31 @@ export default class Oficina extends Component {
           <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-analytics-outline" style={{color: '#ff689b'}}></i></div>
-              <h4 className="title"><a href="#services">{invested} USDT</a></h4> (SITE {(this.state.invested/this.state.precioSITE).toFixed(8)})
+              <h4 className="title"><a href="#services">{invested} USDT</a></h4> (~ {(this.state.invested/this.state.precioSITE).toFixed(2)} SITE)
               <p className="description">Total invertido</p>
             </div>
           </div>
           <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
+              <div className="icon"><i className="ion-ios-analytics-outline" style={{color: '#ff689b'}}></i></div>
+              <h4 className="title"><a href="#services">{(this.state.balanceRef).toFixed(2)} USDT</a></h4> (~ {(this.state.balanceRef/this.state.precioSITE).toFixed(2)} SITE)
+              <p className="description">Bonus de Red</p>
+            </div>
+          </div>
+
+          <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
+            <div className="box">
               <div className="icon"><i className="ion-ios-speedometer-outline" style={{color:'#41cf2e'}}></i></div>
               <h4 className="title"><a href="#services">Disponible</a></h4>
-              <p className="description">{available} USDT</p> (SITE {(available/this.state.precioSITE).toFixed(8)})
+              <p className="description">{available} USDT</p> (~ {(available/this.state.precioSITE).toFixed(2)} SITE)
               <button type="button" className="btn btn-info d-block text-center mx-auto mt-1" onClick={() => this.withdraw()}>Retirar</button>
+            </div>
+          </div>
+          <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
+            <div className="box">
+              <div className="icon"><i className="ion-ios-speedometer-outline" style={{color:'#41cf2e'}}></i></div>
+              <h4 className="title"><a href="#services">Retirado</a></h4>
+              <p className="description">{(this.state.withdrawn).toFixed(2)} USDT</p> (~ {(this.state.withdrawn/this.state.precioSITE).toFixed(2)} SITE)
             </div>
           </div>
 

@@ -20,7 +20,6 @@ export default class CrowdFunding extends Component {
       partner: "Cargando...",
       balanceTRX: "Cargando...",
       balanceUSDT: "Cargando...",
-      maxButton:"Cargando...",
       precioSITE: 0,
       valueUSDT: 0,
       hand: 0
@@ -29,6 +28,7 @@ export default class CrowdFunding extends Component {
 
     this.deposit = this.deposit.bind(this);
     this.estado = this.estado.bind(this);
+    this.estado2 = this.estado2.bind(this);
 
     this.rateSITE = this.rateSITE.bind(this);
     this.handleChangeUSDT = this.handleChangeUSDT.bind(this);
@@ -43,6 +43,7 @@ export default class CrowdFunding extends Component {
     await Utils.setContract(window.tronWeb, contractAddress);
     await this.estado();
     setInterval(() => this.estado(),1*1000);
+    setInterval(() => this.estado2(),1*1000);
   };
 
   async rateSITE(){
@@ -57,9 +58,41 @@ export default class CrowdFunding extends Component {
   };
 
   async estado(){
+    var accountAddress =  await window.tronWeb.trx.getAccount();
+    accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
+    var inversors = await Utils.contract.investors(accountAddress).call();
+
+    var precioSITE = await this.rateSITE();
+
+    var options = [];
+
+    var datos = {};
+
+    inversors = await Utils.contract.investors(accountAddress).call();
+
+    //console.log(parseInt(inversors.plan._hex));
+
+    for (let index = parseInt(inversors.plan._hex)+1; index < 15; index++) {
+      var precio = await Utils.contract.verPlan(index).call();
+      precio = parseInt(precio)/10**8;
+      datos = {};
+      datos.value = index;
+      datos.label = 'Plan Staking '+precio+' USDT';
+      options[index] = datos;
+      
+    }
+
+    this.setState({
+      precioSITE: precioSITE,
+      options: options
+    });
+  }
+
+  async estado2(){
 
     var accountAddress =  await window.tronWeb.trx.getAccount();
     accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
+    var inversors = await Utils.contract.investors(accountAddress).call();
 
     var inicio = accountAddress.substr(0,4);
     var fin = accountAddress.substr(-4);
@@ -73,7 +106,10 @@ export default class CrowdFunding extends Component {
     var contractSITE = await window.tronWeb.contract().at(cons.USDT);
 
     var aprovado = await contractSITE.allowance(accountAddress,contractAddress).call();
+    //console.log(aprovado);
     aprovado = parseInt(aprovado._hex);
+
+    //console.log(aprovado);
 
     if (aprovado > 0) {
       aprovado = "Depositar";
@@ -86,17 +122,9 @@ export default class CrowdFunding extends Component {
     var balance = await contractSITE.balanceOf(accountAddress).call();
     balance = parseInt(balance._hex)/10**decimales;
 
-    var MIN_DEPOSIT = await Utils.contract.MIN_DEPOSIT().call();
-    MIN_DEPOSIT = parseInt(MIN_DEPOSIT._hex)/10**decimales;
-
-    var MAX_DEPOSIT = await Utils.contract.MAX_DEPOSIT().call();
-    MAX_DEPOSIT = parseInt(MAX_DEPOSIT._hex)/10**decimales;
-
     var partner = cons.WS;
 
     var hand = "izquierdo ";
-
-    var inversors = await Utils.contract.investors(accountAddress).call();
 
     if ( inversors.registered ) {
       partner = window.tronWeb.address.fromHex(inversors.sponsor);
@@ -169,26 +197,6 @@ export default class CrowdFunding extends Component {
 
     balanceUSDT = parseInt(balanceUSDT)/10**6;
 
-    var precioSITE = await this.rateSITE();
-
-    var options = [];
-
-    var datos = {};
-
-    inversors = await Utils.contract.investors(accountAddress).call();
-
-    //console.log(parseInt(inversors.plan._hex));
-
-    for (let index = parseInt(inversors.plan._hex)+1; index < 15; index++) {
-      var precio = await Utils.contract.verPlan(index).call();
-      precio = parseInt(precio)/10**8;
-      datos = {};
-      datos.value = index;
-      datos.label = 'Plan Staking '+precio+' USDT';
-      options[index] = datos;
-      
-    }
-
     this.setState({
       deposito: aprovado,
       balance: balance,
@@ -196,28 +204,17 @@ export default class CrowdFunding extends Component {
       accountAddress: accountAddress,
       porcentaje: porcentaje,
       dias: dias,
-      min: MIN_DEPOSIT,
-      max: MAX_DEPOSIT,
       partner: partner,
       balanceSite: balancesite,
       balanceTRX: balanceTRX,
       balanceUSDT: balanceUSDT,
-      precioSITE: precioSITE,
-      maxAlcanzado: parseInt(inversors.invested)/10**decimales <= MAX_DEPOSIT,
-      maxButton:"Max",
-      options: options
     });
   }
 
 
   async deposit() {
 
-    const {  deposito, decimales, balanceSite, balanceTRX, maxAlcanzado, valueUSDT } = this.state;
-
-    var { min, max } = this.state
-
-    min = min*10**decimales;
-    max = max*10**decimales;
+    const {  decimales, balanceSite, balanceTRX, valueUSDT } = this.state;
 
     var amount = 100;
 
@@ -244,14 +241,9 @@ export default class CrowdFunding extends Component {
     if ( aprovado >= amount && 
       aprovado > 0 && 
       balanceSite >= amount && 
-      amount >= min && 
-      amount <= max && 
-      balanceTRX >= 50 &&
-      maxAlcanzado
+      balanceTRX >= 50 
       ){
 
-
-        
         var loc = document.location.href;
         var sponsor = cons.WS;
         var hand = 0;
@@ -290,8 +282,6 @@ export default class CrowdFunding extends Component {
 
               var inversors = await Utils.contract.investors(wallet).call();
 
-              //console.log(inversors);
-
               if ( inversors.registered ) {
                 sponsor = wallet;
               }
@@ -302,37 +292,22 @@ export default class CrowdFunding extends Component {
         }
 
     
-        if ( amount >= min ){
+
 
           await Utils.contract.buyPlan(valueUSDT, sponsor, hand).send();
 
           window.alert("Felicidades inversión exitosa");
 
           document.getElementById("services").scrollIntoView({block: "end", behavior: "smooth"});;
-
-        }
+        
 
 
     }else{
 
-      
-      if ( amount < min ) {
-
-        window.alert("coloca una cantidad mayor que "+(min/10**decimales)+" SITE");
-      }
-
-      if ( amount > max ) {
-
-        window.alert("coloca una cantidad menor que "+(max/10**decimales)+" SITE");
-      }
 
       if ( balanceSite < amount ) {
 
         window.alert("No tienes suficiente SITE");
-      }
-
-      if (!maxAlcanzado) {
-        window.alert("Limite de deposito máximo alcanzado");
       }
 
       if (balanceTRX < 50) {
@@ -387,7 +362,7 @@ export default class CrowdFunding extends Component {
           </p>
 
           <div className="input-group mb-3 text-center">
-          <Select options={options}  onChange={this.handleChangeUSDT} className="form-control mb-20 "/>
+          <Select options={options}  onChange={this.handleChangeUSDT} className="form-control mb-20 h-auto" />
           </div>
 
             <p className="card-text">Recomendamos tener más de 150 TRX para ejecutar las transacciones correctamente</p>

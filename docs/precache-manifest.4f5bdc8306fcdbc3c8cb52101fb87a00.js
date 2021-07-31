@@ -1,19 +1,19 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "08acd7cdc87067ac0dba50244906bec8",
+    "revision": "825e6cfe93ca3a309da4ee76d15a9714",
     "url": "/BINARIO-SITE/index.html"
   },
   {
-    "revision": "99464f94182e81dbaa0f",
-    "url": "/BINARIO-SITE/static/js/2.23578e2b.chunk.js"
+    "revision": "ffeae90f4cd57f278f42",
+    "url": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js"
   },
   {
     "revision": "678226323eca686164c839dfce3432f1",
-    "url": "/BINARIO-SITE/static/js/2.23578e2b.chunk.js.LICENSE.txt"
+    "url": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "157a8df547e2e525b96c",
-    "url": "/BINARIO-SITE/static/js/main.cf6d7095.chunk.js"
+    "revision": "1384fe9d6aca0600240c",
+    "url": "/BINARIO-SITE/static/js/main.354190fa.chunk.js"
   },
   {
     "revision": "79be12cc57f8164c4bf7",
