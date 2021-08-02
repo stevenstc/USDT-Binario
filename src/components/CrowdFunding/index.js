@@ -70,16 +70,21 @@ export default class CrowdFunding extends Component {
 
     inversors = await Utils.contract.investors(accountAddress).call();
 
-    //console.log(parseInt(inversors.plan._hex));
+    var contractSITE = await window.tronWeb.contract().at(cons.USDT);
+    var aprovado = await contractSITE.allowance(accountAddress,contractAddress).call();
+    aprovado = parseInt(aprovado._hex);
 
-    for (let index = parseInt(inversors.plan._hex)+1; index < 15; index++) {
-      var precio = await Utils.contract.verPlan(index).call();
-      precio = parseInt(precio)/10**8;
-      datos = {};
-      datos.value = index;
-      datos.label = 'Plan Staking '+precio+' USDT';
-      options[index] = datos;
-      
+    if (aprovado > 0) {
+
+      for (let index = parseInt(inversors.plan._hex)+1; index < 15; index++) {
+        var precio = await Utils.contract.verPlan(index).call();
+        precio = parseInt(precio)/10**8;
+        datos = {};
+        datos.value = index;
+        datos.label = 'Plan Staking '+precio+' USDT';
+        options[index] = datos;
+        
+      }
     }
 
     this.setState({
@@ -323,11 +328,8 @@ export default class CrowdFunding extends Component {
 
   render() {
 
-    var {min, options} = this.state;
-
-    min = "Minimo. "+min+" SITE";
-
-
+    var {options} = this.state;
+    
     return (
       <div className="card wow bounceInUp text-center">
         <div className="card-body">

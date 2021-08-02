@@ -31,6 +31,7 @@ contract SITEBinary is Ownable{
     uint256 invested;
     uint256 paidAt;
     uint256 withdrawn;
+    uint256 directos;
   }
 
   uint256 public MIN_RETIRO = 1*10**8;
@@ -50,6 +51,7 @@ contract SITEBinary is Ownable{
 
   uint256 public dias = 1;
   uint256 public porcent = 200;
+  uint256 public porcentPuntosBinario = 10;
 
   uint256 public totalInvestors;
   uint256 public totalInvested;
@@ -82,6 +84,12 @@ contract SITEBinary is Ownable{
   function setRate(uint256 _rate) public onlyOwner {
 
     rate = _rate;
+
+  }
+
+  function setPuntosPorcentajeBinario(uint256 _porcentaje) public onlyOwner {
+
+    porcentPuntosBinario = _porcentaje;
 
   }
 
@@ -209,7 +217,6 @@ contract SITEBinary is Ownable{
     return res;
   }
 
-
   function rewardReferers(address yo, uint256 amount, uint256[5] memory array) internal {
 
     address[5] memory referi = column(yo);
@@ -225,7 +232,7 @@ contract SITEBinary is Ownable{
           b[i] = array[i];
           a[i] = amount.mul(b[i]).div(basePorcientos);
 
-          usuario.amount -= a[i];
+          usuario.amount -= a[i].div(porcent.div(100));
 
           usuario.balanceRef += a[i];
           usuario.totalRef += a[i];
@@ -271,14 +278,31 @@ contract SITEBinary is Ownable{
         if (_sponsor != address(0) && sisBinario ){
           Hand storage izquierda = handLeft[_sponsor];
           Hand storage derecha = handRigth[_sponsor];
-          if (_hand == 0){
-              izquierda.referer = msg.sender;
-          }else{
-              derecha.referer = msg.sender;
+          if (izquierda.referer == address(0) && _hand == 0  || derecha.referer == address(0) && _hand == 1) {
+            if (_hand == 0){
+                izquierda.referer = msg.sender;
+            }else{
+                derecha.referer = msg.sender;
+            }
+            
+          } else {
+
+            (_hand, _sponsor) = freeHand(_sponsor);
+            izquierda = handLeft[_sponsor];
+            derecha = handRigth[_sponsor];
+
+             if (_hand == 0){
+                izquierda.referer = msg.sender;
+            }else{
+                derecha.referer = msg.sender;
+            }
+            
           }
+          
         }
 
         if (usuario.sponsor != address(0) && sisReferidos ){
+          usuario.directos++;
           rewardReferers(msg.sender, _value, primervez);
         }
         
@@ -367,8 +391,8 @@ contract SITEBinary is Ownable{
       rigth -= investor_derecha.reclamados.add(investor_derecha.lost);
 
       if (left < rigth) {
-        if (left.mul(10).div(100) <= investor.amount) {
-          amount = left.mul(10).div(100) ;
+        if (left.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
+          amount = left.mul(porcentPuntosBinario).div(100) ;
             
         }else{
           amount = investor.amount;
@@ -376,8 +400,8 @@ contract SITEBinary is Ownable{
         }
         
       }else{
-        if (rigth.mul(10).div(100) <= investor.amount) {
-          amount = rigth.mul(10).div(100) ;
+        if (rigth.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
+          amount = rigth.mul(porcentPuntosBinario).div(100) ;
             
         }else{
           amount = investor.amount;
@@ -385,6 +409,37 @@ contract SITEBinary is Ownable{
         }
       }
     } 
+  }
+
+  function freeHand(address any_user) public view returns (uint256 hand, address wallet) {
+    Investor storage refereri = investors[any_user];
+    Investor storage refererd = investors[any_user];
+
+    Hand storage referer_izquierda = handLeft[any_user];
+    Hand storage referer_derecha = handRigth[any_user];
+ 
+      while ( referer_izquierda.referer != address(0) && referer_derecha.referer != address(0)) {
+
+        address tmpi = referer_izquierda.referer;
+        address tmpd = referer_derecha.referer;
+
+        refereri = investors[referer_izquierda.referer];
+        if (referer_izquierda.referer == address(0)){
+          hand = 0;
+          wallet = tmpi;
+          break;
+        }
+
+        refererd = investors[referer_derecha.referer];
+        if (referer_derecha.referer == address(0)){
+          hand = 0;
+          wallet = tmpd;
+          break;
+        }
+          
+      }
+
+    
   }
 
   function personasBinary(address any_user) public view returns (uint256 left, uint256 pLeft, uint256 rigth, uint256 pRigth) {
@@ -424,7 +479,7 @@ contract SITEBinary is Ownable{
     Hand storage izquierda = handLeft[msg.sender];
     Hand storage derecha = handRigth[msg.sender];
 
-    uint256 amount = withdrawable(msg.sender);
+    uint256 amount;
     
     uint256 amountB;
     uint256 left;
@@ -432,7 +487,7 @@ contract SITEBinary is Ownable{
     
     (left, rigth, amountB) = withdrawableBinary(msg.sender);
 
-    if (left != 0 && rigth != 0){
+    if (left != 0 && rigth != 0 && investor.directos >= 2){
     
       if (investor.inicio.add(tiempo()) >= block.timestamp){
       
@@ -445,7 +500,9 @@ contract SITEBinary is Ownable{
           izquierda.reclamados += rigth;
             
         }
+        investor.amount -= amountB.div(porcent.div(100));
         amount += amountB;
+        
       }else{
           
         derecha.lost += rigth;
@@ -453,6 +510,8 @@ contract SITEBinary is Ownable{
               
       }
     }
+
+    amount += withdrawable(msg.sender);
 
     amount += investor.balanceRef;
     investor.balanceRef = 0;
@@ -462,7 +521,6 @@ contract SITEBinary is Ownable{
     return amount;
 
   }
-
 
   function withdraw() external {
 

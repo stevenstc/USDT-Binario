@@ -158,16 +158,9 @@ export default class Oficina extends Component {
     var MIN_RETIRO = await Utils.contract.MIN_RETIRO().call();
     MIN_RETIRO = parseInt(MIN_RETIRO._hex)/10**decimales;
 
-    var MAX_RETIRO = await Utils.contract.MAX_RETIRO().call();
-    MAX_RETIRO = parseInt(MAX_RETIRO._hex)/10**decimales;
-
-
-    if ( available < MAX_RETIRO && available > MIN_RETIRO ){
+    if ( available > MIN_RETIRO ){
       await Utils.contract.withdraw().send();
     }else{
-      if (available > MAX_RETIRO) {
-        window.alert("Por favor contacta con el soporte técnico de SITE");
-      }
       if (available < MIN_RETIRO) {
         window.alert("El minimo para retirar son: "+(MIN_RETIRO)+" SITE");
       }
