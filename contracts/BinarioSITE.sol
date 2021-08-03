@@ -276,6 +276,8 @@ contract SITEBinary is Ownable{
         usuario.sponsor = _sponsor;
 
         if (_sponsor != address(0) && sisBinario ){
+          Investor storage sponsor = investors[_sponsor];
+          sponsor.directos++;
           Hand storage izquierda = handLeft[_sponsor];
           Hand storage derecha = handRigth[_sponsor];
           if (izquierda.referer == address(0) && _hand == 0  || derecha.referer == address(0) && _hand == 1) {
@@ -302,7 +304,6 @@ contract SITEBinary is Ownable{
         }
 
         if (usuario.sponsor != address(0) && sisReferidos ){
-          usuario.directos++;
           rewardReferers(msg.sender, _value, primervez);
         }
         
