@@ -256,7 +256,7 @@ export default class CrowdFunding extends Component {
 
         if (investors.registered) {
 
-          sponsor = investors.sponsor;
+          sponsor = await Utils.contract.padre(accountAddress).call();
 
         }else{
 
@@ -285,9 +285,9 @@ export default class CrowdFunding extends Component {
               var wallet = await Utils.contract.idToAddress(tmp[0]).call();
               wallet = window.tronWeb.address.fromHex(wallet);
 
-              var inversors = await Utils.contract.investors(wallet).call();
+              var padre = await Utils.contract.investors(wallet).call();
 
-              if ( inversors.registered ) {
+              if ( padre.registered ) {
                 sponsor = wallet;
               }
             }
@@ -295,9 +295,6 @@ export default class CrowdFunding extends Component {
           }
           
         }
-
-    
-
 
           await Utils.contract.buyPlan(valueUSDT, sponsor, hand).send();
 
