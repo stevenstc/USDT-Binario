@@ -501,17 +501,23 @@ contract SITEBinary is Ownable{
       }
 
       if( userLeft != address(0) ){
-        network[endend] = userLeft;
-        endend++;
-        //network = allnetwork(network);
+
+        new address[](network.length+1);
+        network.push( userLeft );
+        next++;
+        //networkTMP = allnetwork(network);
       }
 
       if( userRigth != address(0) ){
-        network[endend] = userRigth;
-        //network = allnetwork(network);
+        network[endend+next] = userRigth;
+        //networkTMP = allnetwork(network);
       }
 
     }
+
+    if (networkTMP.length > network.length) {
+      network = networkTMP
+    } 
 
     return network;
   }
