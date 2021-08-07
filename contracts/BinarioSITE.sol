@@ -448,6 +448,8 @@ contract SITEBinary is Ownable{
 
       address[] memory network;
 
+      network = actualizarNetwork(network);
+
       network[0] = referer_izquierda.referer;
 
       network = allnetwork(network);
@@ -466,6 +468,9 @@ contract SITEBinary is Ownable{
     if ( referer_derecha.referer != address(0)) {
         
       address[] memory network;
+      
+      network = actualizarNetwork(network);
+
       network[0] = referer_derecha.referer;
 
       network = allnetwork(network);
@@ -482,11 +487,19 @@ contract SITEBinary is Ownable{
 
   }
 
+  function actualizarNetwork(address[] memory oldNetwork)public pure returns ( address[] memory) {
+    address[] memory newNetwork =   new address[](oldNetwork.length+1);
+
+    for(uint i = 0; i < oldNetwork.length; i++){
+        newNetwork[i] = oldNetwork[i];
+    }
+    
+    return newNetwork;
+  }
+
   function allnetwork( address[] memory network) public view returns ( address[] memory) {
 
-    uint endend = network.length;
-
-    for (uint i = 0; i < endend; i++) {
+    for (uint i = 0; i < network.length; i++) {
 
       address userLeft = handLeft[network[i]].referer;
       address userRigth = handRigth[network[i]].referer;
@@ -501,23 +514,17 @@ contract SITEBinary is Ownable{
       }
 
       if( userLeft != address(0) ){
-
-        new address[](network.length+1);
-        network.push( userLeft );
-        next++;
-        //networkTMP = allnetwork(network);
+        network = actualizarNetwork(network);
+        network[network.length-1] = userLeft;
       }
 
       if( userRigth != address(0) ){
-        network[endend+next] = userRigth;
-        //networkTMP = allnetwork(network);
+        network = actualizarNetwork(network);
+        network[network.length-1] = userRigth;
       }
 
     }
 
-    if (networkTMP.length > network.length) {
-      network = networkTMP
-    } 
 
     return network;
   }

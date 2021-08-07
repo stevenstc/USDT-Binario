@@ -1,11 +1,11 @@
 const proxy = "https://proxy-sites.herokuapp.com/";
 const PRU = "shasta.";// red 
 
-const PRE = "https://precio-site.herokuapp.com/api/v1/servicio/precio/SITE ";// red 
+const PRE = "https://precio-site.herokuapp.com/api/v1/servicio/precio/SITE";// red 
 
 const WS = "T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb";//T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb recibe los huerfanos por defecto
 
-const SC = "TDLq8s47AEgLhLfyzvKh3jgPFsrz9g9Mor";// direccion del contrato
+const SC = "TVgNrZWEfiwoUWNWhRAFT6mPvWMzYR4fom";// direccion del contrato
 
 const USDT = "TFXKvqoKecmfKksaB7cZpS4eLhrAHu4gFd";// USDT contract or token trc20
 
