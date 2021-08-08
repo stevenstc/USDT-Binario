@@ -91,7 +91,7 @@ export default class CrowdFunding extends Component {
 
     if (aprovado > 0) {
 
-      for (let index = parseInt(inversors.plan._hex)+1; index < 15; index++) {
+      for (let index = parseInt(inversors.plan._hex)+1; index < 9; index++) {
         var precio = await Utils.contract.verPlan(index).call();
         precio = parseInt(precio)/10**8;
         datos = {};
@@ -236,7 +236,7 @@ export default class CrowdFunding extends Component {
 
   async deposit() {
 
-    const { balanceSite, balanceTRX, valueUSDT } = this.state;
+    var { balanceSite, balanceTRX, valueUSDT } = this.state;
 
     var accountAddress =  await window.tronWeb.trx.getAccount();
     accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
@@ -246,15 +246,16 @@ export default class CrowdFunding extends Component {
     var aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
     aprovado = parseInt(aprovado._hex);
 
-    var amount = await Utils.contract.plans(valueUSDT).call();
-    amount = parseInt(amount._hex)/10**8;
-    amount = amount/this.state.precioSITE;
-
     if (aprovado <= 0 && balanceTRX >= 50){
       await contractUSDT.approve(contractAddress, "115792089237316195423570985008687907853269984665640564039457584007913129639935").send();
       aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
       aprovado = parseInt(aprovado._hex);
+      valueUSDT = 1;
     }
+
+    var amount = await Utils.contract.plans(valueUSDT).call();
+    amount = parseInt(amount._hex)/10**8;
+    amount = amount/this.state.precioSITE;
 
     if ( aprovado > 0 && 
       balanceSite >= amount && 
