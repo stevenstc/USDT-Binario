@@ -56,9 +56,9 @@ export default class Oficina extends Component {
   async componentDidMount() {
     await Utils.setContract(window.tronWeb, contractAddress);
     setInterval(() => this.Investors2(),3*1000);
-    setInterval(() => this.Investors3(),1*1000);
-    setInterval(() => this.Investors(),1*1000);
-    setInterval(() => this.Link(),1*1000);
+    setInterval(() => this.Investors3(),3*1000);
+    setInterval(() => this.Investors(),3*1000);
+    setInterval(() => this.Link(),3*1000);
   };
 
   async rateSITE(){

@@ -1,17 +1,14 @@
 {
   "name": "smartsitecapital",
-  "version": "1.0.3",
-  "description": "Es la aplicacion para hacer Crowd Funding en la Blockchain tron",
-  "directories": {
-    "test": "test"
-  },
+  "version": "2.0.0",
+  "description": "Es un sistema binario en la Blockchain tron",
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js && npx rimraf docs && npx move-cli build docs"
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/SITESMART650/BINARIO-SITE"
   },
   "author": "smartsitecapital",
   "license": "Apache 2.0",

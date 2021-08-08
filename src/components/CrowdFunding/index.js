@@ -41,9 +41,9 @@ export default class CrowdFunding extends Component {
 
   async componentDidMount() {
     await Utils.setContract(window.tronWeb, contractAddress);
-    await this.estado();
-    setInterval(() => this.estado(),1*1000);
-    setInterval(() => this.estado2(),1*1000);
+    this.estado();
+    setInterval(() => this.estado(),3*1000);
+    setInterval(() => this.estado2(),3*1000);
   };
 
   async rateSITE(){
@@ -73,7 +73,11 @@ export default class CrowdFunding extends Component {
     accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
     var inversors = await Utils.contract.investors(accountAddress).call();
 
-    var precioSITE = await this.rateSITE();
+    var precioSITE = this.state.precioSITE
+
+    if (precioSITE === 0){
+      precioSITE = await this.rateSITE();
+    }
 
     var options = [];
 
@@ -102,6 +106,8 @@ export default class CrowdFunding extends Component {
       precioSITE: precioSITE,
       options: options
     });
+
+    this.rateSITE();
   }
 
   async estado2(){
@@ -230,19 +236,9 @@ export default class CrowdFunding extends Component {
 
   async deposit() {
 
-    const {  decimales, balanceSite, balanceTRX, valueUSDT } = this.state;
-
-    var amount = 100;
-
-    amount = parseFloat(amount);
-    amount = parseInt(amount*10**decimales);
-
-    //console.log(amount);
-
-    //console.log(isNaN(amount));
+    const { balanceSite, balanceTRX, valueUSDT } = this.state;
 
     var accountAddress =  await window.tronWeb.trx.getAccount();
-  
     accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
 
     var tronUSDT = await window.tronWeb;
@@ -250,12 +246,17 @@ export default class CrowdFunding extends Component {
     var aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
     aprovado = parseInt(aprovado._hex);
 
+    var amount = await Utils.contract.plans(valueUSDT).call();
+    amount = parseInt(amount._hex)/10**8;
+    amount = amount/this.state.precioSITE;
+
     if (aprovado <= 0 && balanceTRX >= 50){
       await contractUSDT.approve(contractAddress, "115792089237316195423570985008687907853269984665640564039457584007913129639935").send();
+      aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
+      aprovado = parseInt(aprovado._hex);
     }
 
-    if ( aprovado >= amount && 
-      aprovado > 0 && 
+    if ( aprovado > 0 && 
       balanceSite >= amount && 
       balanceTRX >= 50 
       ){
@@ -324,7 +325,7 @@ export default class CrowdFunding extends Component {
       }
 
       if (balanceTRX < 50) {
-        await window.alert("Su cuenta debe tener almenos 150 TRX para ejecutar las transacciones correctamente");
+        window.alert("Su cuenta debe tener almenos 150 TRX para ejecutar las transacciones correctamente");
   
       }
 

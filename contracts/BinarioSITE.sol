@@ -585,8 +585,10 @@ contract SITEBinary is Ownable{
         return (1, network[i]);
       }
 
-      network[network.length] = handLeft[network[i]].referer;
-      network[network.length] = handRigth[network[i]].referer;
+      network = actualizarNetwork(network);
+      network[network.length-1] = handLeft[network[i]].referer;
+      network = actualizarNetwork(network);
+      network[network.length-1] = handRigth[network[i]].referer;
 
     }
     recursiveInsertion(network);

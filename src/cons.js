@@ -5,7 +5,7 @@ const PRE = "https://precio-site.herokuapp.com/api/v1/servicio/precio/SITE";// r
 
 const WS = "T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb";//T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb recibe los huerfanos por defecto
 
-const SC = "TS3f9Pij71cigz6iVEHxVoq1Xipy9PnzAP";// direccion del contrato
+const SC = "TAYDuUxpQXoJykJV7KzLmN5gb7URnSvnMy";// direccion del contrato
 
 const USDT = "TFXKvqoKecmfKksaB7cZpS4eLhrAHu4gFd";// USDT contract or token trc20
 

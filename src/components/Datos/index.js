@@ -21,7 +21,7 @@ export default class Datos extends Component {
 
   async componentDidMount() {
     await Utils.setContract(window.tronWeb, contractAddress);
-    setInterval(() => this.totalInvestors(),1*1000);
+    setInterval(() => this.totalInvestors(),3*1000);
   };
 
   async rateSITE(){
