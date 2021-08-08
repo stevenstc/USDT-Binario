@@ -111,8 +111,6 @@ export default class Oficina extends Component {
     var contractUSDT = await tronUSDT.contract().at(cons.USDT);
     var decimales = await contractUSDT.decimals().call();
 
-    console.log(esto);
-
     var usuario = esto;
     usuario.inicio = parseInt(usuario.inicio._hex)*1000;
     usuario.invested = parseInt(usuario.invested);
@@ -326,7 +324,7 @@ export default class Oficina extends Component {
                 <div className="progress-bar bg-success" role="progressbar" style={{"width": this.state.porcentiempo+"%"}} aria-valuenow={this.state.porcentiempo} aria-valuemin="0" aria-valuemax="100"></div>
               </div>
               <br></br>
-              <p className="description">Máximo a reclamar <b>{this.state.valorPlan} USDT</b></p>
+              <p className="description"><b>{(this.state.withdrawn).toFixed(2)} USDT</b> reclamados de <b>{this.state.valorPlan} USDT</b></p>
               <div className="progress" style={{"height": "20px"}}>
                 <div className="progress-bar bg-info " role="progressbar" style={{"width": this.state.progresoUsdt+"%"}} aria-valuenow={this.state.progresoUsdt} aria-valuemin="0" aria-valuemax="100"></div>
               </div>

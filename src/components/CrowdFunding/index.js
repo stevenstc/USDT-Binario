@@ -49,9 +49,20 @@ export default class CrowdFunding extends Component {
   async rateSITE(){
     var proxyUrl = cons.proxy;
     var apiUrl = cons.PRE;
-    var response = await fetch(proxyUrl+apiUrl)
+    var response = await fetch(proxyUrl+apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers':'origin,x-requested-with'
+      }
+    })
     .catch(error =>{console.error(error)})
     const json = await response.json();
+
+    this.setState({
+      precioSITE: json.Data.precio
+    });
+
 
     return json.Data.precio;
 

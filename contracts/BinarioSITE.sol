@@ -35,6 +35,7 @@ contract SITEBinary is Ownable{
   uint256 public MIN_RETIRO = 1*10**8;
 
   uint256 public rate = 1650000;
+  uint256 public rateDescuento;
 
   uint256[5] public primervez = [100, 0, 0, 0, 0];
 
@@ -64,12 +65,14 @@ contract SITEBinary is Ownable{
   mapping(address => uint256) public addressToId;
   
   uint256 public lastUserId = 2;
+  address public api;
 
 
   constructor(address _tokenTRC20) {
     USDT_Contract = TRC20_Interface(_tokenTRC20);
 
     Investor storage usuario = investors[owner];
+    api = owner;
 
     ( usuario.registered, usuario.recompensa ) = (true,true);
 
@@ -86,15 +89,39 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setPuntosPorcentajeBinario(uint256 _porcentaje) public onlyOwner {
+  function setRateSellDescuento(uint256 _porcentaje) public onlyOwner returns(uint256){
 
-    porcentPuntosBinario = _porcentaje;
+    rateDescuento = _porcentaje;
+
+    return _porcentaje; 
+  }
+
+  function rateSell() public view returns(uint256){
+
+    return rate.sub(rate.mul(rateDescuento).div(100));
 
   }
 
-  function setMIN_RETIRO(uint256 _min) public onlyOwner {
+  function setRateSellApi(address _wallet) public onlyOwner returns(address){
+
+    api = _wallet;
+
+    return _wallet;
+
+  }
+
+  function setPuntosPorcentajeBinario(uint256 _porcentaje) public onlyOwner returns(uint256){
+
+    porcentPuntosBinario = _porcentaje;
+
+    return _porcentaje;
+  }
+
+  function setMIN_RETIRO(uint256 _min) public onlyOwner returns(uint256){
 
     MIN_RETIRO = _min*10**8;
+
+    return _min;
 
   }
 
@@ -299,12 +326,14 @@ contract SITEBinary is Ownable{
 
               address[] memory network;
 
+              network = actualizarNetwork(network);
+
               if (_hand == 0){
-                network[1] = izquierda.referer;
+                network[0] = izquierda.referer;
                 (_hand, _sponsor) = recursiveInsertion(network);
                   
               }else{
-                network[1] = derecha.referer;
+                network[0] = derecha.referer;
                 (_hand, _sponsor) = recursiveInsertion(network);
                   
               }
@@ -384,77 +413,73 @@ contract SITEBinary is Ownable{
   }
   
   function withdrawableBinary(address any_user) public view returns (uint256 left, uint256 rigth, uint256 amount) {
-    Investor storage referer = investors[any_user];
+    Investor storage user = investors[any_user];
 
-    Hand storage referer_izquierda = handLeft[any_user];
-    Hand storage referer_derecha = handRigth[any_user];
+    Hand storage user_izquierda = handLeft[any_user];
+    Hand storage user_derecha = handRigth[any_user];
 
     Investor storage investor = investors[any_user];
 
-    Hand storage investor_izquierda = handLeft[referer_izquierda.referer];
-    Hand storage investor_derecha = handRigth[referer_derecha.referer];
-
-    if (investor_izquierda.referer != address(0) &&  investor_derecha.referer != address(0)) {
         
-      if ( referer_izquierda.referer != address(0)) {
-          
+    if ( user_izquierda.referer != address(0)) {
+        
+      address[] memory network;
+
+      network = actualizarNetwork(network);
+
+      network[0] = user_izquierda.referer;
+
+      network = allnetwork(network);
+      
+      for (uint i = 0; i < network.length; i++) {
+      
+        user = investors[network[i]];
+        left += user.invested;
+      }
+        
+    }
+      
+    left -= user_izquierda.reclamados.add(user_izquierda.lost);
+      
+    if ( user_derecha.referer != address(0)) {
+        
         address[] memory network;
 
         network = actualizarNetwork(network);
 
-        network[0] = referer_izquierda.referer;
+        network[0] = user_derecha.referer;
 
         network = allnetwork(network);
         
         for (uint i = 0; i < network.length; i++) {
         
-          referer = investors[network[i]];
-          left += referer.invested;
-        }
-          
-      }
-      
-      left -= investor_izquierda.reclamados.add(investor_izquierda.lost);
-      
-      if ( referer_derecha.referer != address(0)) {
-          
-          address[] memory network;
-
-          network = actualizarNetwork(network);
-
-          network[0] = referer_derecha.referer;
-
-          network = allnetwork(network);
-          
-          for (uint i = 0; i < network.length; i++) {
-          
-            referer = investors[network[i]];
-            rigth += referer.invested;
-          }
-          
-      }
-
-      rigth -= investor_derecha.reclamados.add(investor_derecha.lost);
-
-      if (left < rigth) {
-        if (left.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
-          amount = left.mul(porcentPuntosBinario).div(100) ;
-            
-        }else{
-          amount = investor.amount;
-            
+          user = investors[network[i]];
+          rigth += user.invested;
         }
         
+    }
+
+    rigth -= user_derecha.reclamados.add(user_derecha.lost);
+
+    if (left < rigth) {
+      if (left.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
+        amount = left.mul(porcentPuntosBinario).div(100) ;
+          
       }else{
-        if (rigth.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
-          amount = rigth.mul(porcentPuntosBinario).div(100) ;
-            
-        }else{
-          amount = investor.amount;
-            
-        }
+        amount = investor.amount;
+          
       }
-    } 
+      
+    }else{
+      if (rigth.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
+        amount = rigth.mul(porcentPuntosBinario).div(100) ;
+          
+      }else{
+        amount = investor.amount;
+          
+      }
+    }
+  
   }
 
 
@@ -621,7 +646,7 @@ contract SITEBinary is Ownable{
 
     uint256 amount = withdrawable(msg.sender)+usuario.balanceRef;
 
-    uint256 _pay = amount.mul(10**8).div(rate);
+    uint256 _pay = amount.mul(10**8).div(rateSell());
 
     require ( USDT_Contract.balanceOf(address(this)) >= amount, "The contract has no balance");
     require ( amount >= MIN_RETIRO, "The minimum withdrawal limit reached");

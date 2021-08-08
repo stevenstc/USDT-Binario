@@ -11,10 +11,12 @@ export default class Datos extends Component {
     this.state = {
       totalInvestors: 0,
       totalInvested: 0,
-      totalRefRewards: 0
+      totalRefRewards: 0,
+      precioSITE: 0,
     };
 
     this.totalInvestors = this.totalInvestors.bind(this);
+    this.rateSITE = this.rateSITE.bind(this);
   }
 
   async componentDidMount() {
@@ -22,7 +24,24 @@ export default class Datos extends Component {
     setInterval(() => this.totalInvestors(),1*1000);
   };
 
+  async rateSITE(){
+    var proxyUrl = cons.proxy;
+    var apiUrl = cons.PRE;
+    var response = await fetch(proxyUrl+apiUrl)
+    .catch(error =>{console.error(error)})
+    const json = await response.json();
+
+    this.setState({
+      precioSITE: json.Data.precio
+    });
+
+    return json.Data.precio;
+
+  };
+
   async totalInvestors() {
+
+    await this.rateSITE();
 
     let esto = await Utils.contract.setstate().call();
 
@@ -52,12 +71,12 @@ export default class Datos extends Component {
         </div>
 
         <div className="col-lg-4 col-12 text-center">
-          <span data-toggle="counter-up">{totalInvested.toFixed(2)} USD</span>
+          <span data-toggle="counter-up">{(totalInvested/this.state.precioSITE).toFixed(2)} SITE</span>
           <p>Invertido en Plataforma</p>
         </div>
 
         <div className="col-lg-4 col-12 text-center">
-          <span data-toggle="counter-up">{totalRefRewards.toFixed(2)} USD</span>
+          <span data-toggle="counter-up">{(totalRefRewards/this.state.precioSITE).toFixed(2)} SITE</span>
           <p>Total Recompensas por Referidos</p>
         </div>
 
