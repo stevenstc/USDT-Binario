@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.js": "/BINARIO-SITE/static/js/main.f7aa0df2.chunk.js",
-    "main.js.map": "/BINARIO-SITE/static/js/main.f7aa0df2.chunk.js.map",
+    "main.js": "/BINARIO-SITE/static/js/main.fcf09872.chunk.js",
+    "main.js.map": "/BINARIO-SITE/static/js/main.fcf09872.chunk.js.map",
     "runtime-main.js": "/BINARIO-SITE/static/js/runtime-main.11ff97c4.js",
     "runtime-main.js.map": "/BINARIO-SITE/static/js/runtime-main.11ff97c4.js.map",
     "static/js/2.8fe7f426.chunk.js": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js",
     "static/js/2.8fe7f426.chunk.js.map": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js.map",
     "index.html": "/BINARIO-SITE/index.html",
-    "precache-manifest.02555e9782325df7e0364b5244db41b8.js": "/BINARIO-SITE/precache-manifest.02555e9782325df7e0364b5244db41b8.js",
+    "precache-manifest.82065eceb0369a93df2a012db04d0a9c.js": "/BINARIO-SITE/precache-manifest.82065eceb0369a93df2a012db04d0a9c.js",
     "service-worker.js": "/BINARIO-SITE/service-worker.js",
     "static/js/2.8fe7f426.chunk.js.LICENSE.txt": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js.LICENSE.txt",
     "static/media/TronLinkLogo.png": "/BINARIO-SITE/static/media/TronLinkLogo.d3a8f115.png"
@@ -15,6 +15,6 @@
   "entrypoints": [
     "static/js/runtime-main.11ff97c4.js",
     "static/js/2.8fe7f426.chunk.js",
-    "static/js/main.f7aa0df2.chunk.js"
+    "static/js/main.fcf09872.chunk.js"
   ]
 }

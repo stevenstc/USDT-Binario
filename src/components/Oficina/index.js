@@ -31,6 +31,7 @@ export default class Oficina extends Component {
       puntosEfectivosDerecha: 0,
       puntosReclamadosIzquierda: 0,
       puntosReclamadosDerecha: 0,
+      directos: 0,
 
     };
 
@@ -115,6 +116,9 @@ export default class Oficina extends Component {
     usuario.inicio = parseInt(usuario.inicio._hex)*1000;
     usuario.invested = parseInt(usuario.invested);
     usuario.withdrawn = parseInt(usuario.withdrawn._hex);
+    usuario.directos = parseInt(usuario.directos);
+
+    //console.log(usuario);
     
     var tiempo = await Utils.contract.tiempo().call();
     tiempo = parseInt(tiempo._hex)*1000;
@@ -143,6 +147,7 @@ export default class Oficina extends Component {
       progresoUsdt: progresoUsdt,
       valorPlan: valorPlan/10**decimales,
       fecha: fecha,
+      directos: usuario.directos
     });
 
   };
@@ -219,7 +224,11 @@ export default class Oficina extends Component {
   render() {
     var { balanceRef, invested, my, direccion, link, link2} = this.state;
 
-    var available = (balanceRef+my+this.state.bonusBinario);
+    var available = balanceRef+my;
+    if(this.state.directos >= 2){
+      available += this.state.bonusBinario;
+    }
+    
     available = available.toFixed(2);
     available = parseFloat(available);
 
@@ -309,8 +318,8 @@ export default class Oficina extends Component {
               <h4 className="title"><a href="#services">{(this.state.balanceRef+this.state.bonusBinario).toFixed(2)} USDT</a></h4>
               <p>(~ {(this.state.balanceRef+this.state.bonusBinario/this.state.precioSITE).toFixed(2)} SITE)</p>
               <hr></hr>
-              <p className="description">Referido directo {(this.state.balanceRef).toFixed(2)} USDT </p>
-              <p className="description">Red binaria {(this.state.bonusBinario).toFixed(2)} USDT </p>
+              <p className="description">({this.state.directos}) Referidos directos <b>{(this.state.balanceRef).toFixed(2)} USDT</b> </p>
+              <p className="description">({this.state.personasDerecha+this.state.personasIzquierda}) Red binaria <b>{(this.state.bonusBinario).toFixed(2)} USDT</b> </p>
               
             </div>
           </div>
