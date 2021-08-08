@@ -248,9 +248,8 @@ export default class CrowdFunding extends Component {
 
     if (aprovado <= 0 && balanceTRX >= 50){
       await contractUSDT.approve(contractAddress, "115792089237316195423570985008687907853269984665640564039457584007913129639935").send();
-      aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
-      aprovado = parseInt(aprovado._hex);
-      valueUSDT = 1;
+      window.alert("Registro exitoso");
+      return;
     }
 
     var amount = await Utils.contract.plans(valueUSDT).call();
