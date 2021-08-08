@@ -83,15 +83,28 @@ export default class CrowdFunding extends Component {
 
     var datos = {};
 
-    inversors = await Utils.contract.investors(accountAddress).call();
+    inversors.plan = parseInt(inversors.plan._hex);
+
+    inversors.inicio = parseInt(inversors.inicio._hex)*1000;
+    
+    var tiempo = await Utils.contract.tiempo().call();
+    tiempo = parseInt(tiempo._hex)*1000;
+
+    var porcentiempo = ((Date.now()-inversors.inicio)*100)/tiempo;
 
     var contractSITE = await window.tronWeb.contract().at(cons.USDT);
     var aprovado = await contractSITE.allowance(accountAddress,contractAddress).call();
     aprovado = parseInt(aprovado._hex);
 
+    if(porcentiempo >= 100){
+      inversors.plan = 0;
+    }else{
+      inversors.plan++;
+    }
+
     if (aprovado > 0) {
 
-      for (let index = parseInt(inversors.plan._hex)+1; index < 9; index++) {
+      for (let index = inversors.plan; index < 9; index++) {
         var precio = await Utils.contract.verPlan(index).call();
         precio = parseInt(precio)/10**8;
         datos = {};

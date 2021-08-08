@@ -266,11 +266,19 @@ contract SITEBinary is Ownable{
           b[i] = array[i];
           a[i] = amount.mul(b[i]).div(basePorcientos);
 
-          usuario.amount -= a[i].div(porcent.div(100));
+          if (usuario.amount >= a[i].div(porcent.div(100))) {
+            usuario.amount -= a[i].div(porcent.div(100));
+            usuario.balanceRef += a[i];
+            usuario.totalRef += a[i];
+            totalRefRewards += a[i];
+            
+          }else{
 
-          usuario.balanceRef += a[i];
-          usuario.totalRef += a[i];
-          totalRefRewards += a[i];
+            usuario.balanceRef += usuario.amount.mul(porcent.div(100));
+            usuario.totalRef += usuario.amount.mul(porcent.div(100));
+            totalRefRewards += usuario.amount.mul(porcent.div(100));
+            usuario.amount = 0;
+          }
 
         }else{
           break;
@@ -286,7 +294,7 @@ contract SITEBinary is Ownable{
   function buyPlan(uint256 _plan, address _sponsor, uint256 _hand) public {
 
     require( _hand <= 1, "mano incorrecta");
-    require(_plan <= plans.length, "plan incorrecto");
+    require(_plan <= plans.length && _plan > 0, "plan incorrecto");
 
     Investor storage usuario = investors[msg.sender];
     if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
