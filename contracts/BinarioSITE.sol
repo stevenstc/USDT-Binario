@@ -36,11 +36,11 @@ contract SITEBinary is Ownable{
 
   uint256 public rate = 1650000;
 
-  uint256[5] public primervez = [30, 0, 0, 0, 0];
+  uint256[5] public primervez = [100, 0, 0, 0, 0];
 
-  uint256[5] public porcientos = [5, 0, 0, 0, 0];
+  uint256[5] public porcientos = [0, 0, 0, 0, 0];
 
-  uint256[16] public plans = [0, 100*10**8, 300*10**8, 500*10**8, 1000*10**8, 10000*10**8,20000*10**8, 30000*10**8, 50000*10**8, 100000*10**8, 1000000*10**8, 2000000*10**8, 3000000*10**8, 5000000*10**8, 1000000000*10**8, 2000000000*10**8];
+  uint256[16] public plans = [0, 25*10**8, 50*10**8, 100*10**8, 300*10**8, 500*10**8, 1000*10**8, 2000*10**8, 5000*10**8, 100000*10**8, 1000000*10**8, 2000000*10**8, 3000000*10**8, 5000000*10**8, 1000000000*10**8, 2000000000*10**8];
 
   uint256 public basePorcientos = 1000;
 
@@ -48,6 +48,7 @@ contract SITEBinary is Ownable{
   bool public sisBinario = true;
 
   uint256 public dias = 1;
+  uint256 public maxTime = 90;
   uint256 public porcent = 200;
   uint256 public porcentPuntosBinario = 10;
 
@@ -167,6 +168,14 @@ contract SITEBinary is Ownable{
 
   }
 
+  function setMaxTime(uint256 _porcentajemaximoParahacerUpgrade) public onlyOwner returns(uint256){
+
+    maxTime = _porcentajemaximoParahacerUpgrade;
+    
+    return (_porcentajemaximoParahacerUpgrade);
+
+  }
+
   function setBase(uint256 _100) public onlyOwner returns(uint256){
 
     basePorcientos = _100;
@@ -253,83 +262,88 @@ contract SITEBinary is Ownable{
     require(_plan <= plans.length, "plan incorrecto");
 
     Investor storage usuario = investors[msg.sender];
-    if( usuario.inicio != 0 && usuario.inicio.add(tiempo()) > block.timestamp){
+    if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
       upGradePlan(_plan);
     }else{
 
-      uint256 _value = plans[_plan];
+      if (usuario.inicio == 0 || usuario.inicio.add(tiempo()) <= block.timestamp) {
+        uint256 _value = plans[_plan];
 
-      require( USDT_Contract.allowance(msg.sender, address(this)) >= payValue(_value), "aprovado insuficiente");
-      require( USDT_Contract.transferFrom(msg.sender, address(this), payValue(_value)), "saldo insuficiente" );
+        require( USDT_Contract.allowance(msg.sender, address(this)) >= payValue(_value), "aprovado insuficiente");
+        require( USDT_Contract.transferFrom(msg.sender, address(this), payValue(_value)), "saldo insuficiente" );
 
-      usuario.inicio = block.timestamp;
+        usuario.inicio = block.timestamp;
 
-      usuario.invested += _value;
-      usuario.amount += _value;
-      usuario.plan = _plan;
-      
-      if (!usuario.registered){
+        usuario.invested += _value;
+        usuario.amount += _value;
+        usuario.plan = _plan;
+        
+        if (!usuario.registered){
 
-        (usuario.registered, usuario.recompensa) = (true, true);
-        padre[msg.sender] = _sponsor;
+          (usuario.registered, usuario.recompensa) = (true, true);
+          padre[msg.sender] = _sponsor;
 
-        if (_sponsor != address(0) && sisBinario ){
-          Investor storage sponsor = investors[_sponsor];
-          sponsor.directos++;
-          Hand storage izquierda = handLeft[_sponsor];
-          Hand storage derecha = handRigth[_sponsor];
-          if (izquierda.referer == address(0) && _hand == 0  || derecha.referer == address(0) && _hand == 1) {
-            if (_hand == 0){
+          if (_sponsor != address(0) && sisBinario ){
+            Investor storage sponsor = investors[_sponsor];
+            sponsor.directos++;
+            Hand storage izquierda = handLeft[_sponsor];
+            Hand storage derecha = handRigth[_sponsor];
+            if (izquierda.referer == address(0) && _hand == 0  || derecha.referer == address(0) && _hand == 1) {
+              if (_hand == 0){
+                  izquierda.referer = msg.sender;
+              }else{
+                  derecha.referer = msg.sender;
+              }
+              
+            } else {
+
+              address[] memory network;
+
+              if (_hand == 0){
+                network[1] = izquierda.referer;
+                (_hand, _sponsor) = recursiveInsertion(network);
+                  
+              }else{
+                network[1] = derecha.referer;
+                (_hand, _sponsor) = recursiveInsertion(network);
+                  
+              }
+              
+              if (_hand == 0){
+                izquierda = handLeft[_sponsor];
                 izquierda.referer = msg.sender;
-            }else{
+              }else{
+                derecha = handRigth[_sponsor];
                 derecha.referer = msg.sender;
-            }
-            
-          } else {
-
-            address[] memory network;
-
-            if (_hand == 0){
-              network[1] = izquierda.referer;
-              (_hand, _sponsor) = recursiveInsertion(network);
-                
-            }else{
-              network[1] = derecha.referer;
-              (_hand, _sponsor) = recursiveInsertion(network);
-                
-            }
-            
-            if (_hand == 0){
-              izquierda = handLeft[_sponsor];
-              izquierda.referer = msg.sender;
-            }else{
-              derecha = handRigth[_sponsor];
-              derecha.referer = msg.sender;
+              }
+              
             }
             
           }
+
+          if (padre[msg.sender] != address(0) && sisReferidos ){
+            rewardReferers(msg.sender, _value, primervez);
+          }
           
+          totalInvestors++;
+
+          idToAddress[lastUserId] = msg.sender;
+          addressToId[msg.sender] = lastUserId;
+          
+          lastUserId++;
+
+        }else{
+
+          if (padre[msg.sender] != address(0) && sisReferidos ){
+            rewardReferers(msg.sender, _value, porcientos);
+          }
         }
 
-        if (padre[msg.sender] != address(0) && sisReferidos ){
-          rewardReferers(msg.sender, _value, primervez);
-        }
+        totalInvested += _value;
         
-        totalInvestors++;
-
-        idToAddress[lastUserId] = msg.sender;
-        addressToId[msg.sender] = lastUserId;
-        
-        lastUserId++;
-
-      }else{
-
-        if (padre[msg.sender] != address(0) && sisReferidos ){
-          rewardReferers(msg.sender, _value, porcientos);
-        }
+      } else {
+        revert();
       }
-
-      totalInvested += _value;
     }
   }
   
@@ -343,6 +357,8 @@ contract SITEBinary is Ownable{
     require( USDT_Contract.allowance(msg.sender, address(this)) >= payValue(_value), "aprovado insuficiente");
     require( USDT_Contract.transferFrom(msg.sender, address(this), payValue(_value)), "saldo insuficiente" );
     
+    usuario.inicio = block.timestamp;
+
     usuario.plan = _plan;
     usuario.amount += _value;
     usuario.invested += _value;
@@ -382,15 +398,19 @@ contract SITEBinary is Ownable{
         
       if ( referer_izquierda.referer != address(0)) {
           
-          address[] memory network;
-          network[0] = referer_izquierda.referer;
-          uint _paso = 0;
-          
-          for (uint i = _paso; i < network.length; i++) {
-          
-            referer = investors[network[i]];
-            left += referer.invested;
-          }
+        address[] memory network;
+
+        network = actualizarNetwork(network);
+
+        network[0] = referer_izquierda.referer;
+
+        network = allnetwork(network);
+        
+        for (uint i = 0; i < network.length; i++) {
+        
+          referer = investors[network[i]];
+          left += referer.invested;
+        }
           
       }
       
@@ -399,10 +419,14 @@ contract SITEBinary is Ownable{
       if ( referer_derecha.referer != address(0)) {
           
           address[] memory network;
+
+          network = actualizarNetwork(network);
+
           network[0] = referer_derecha.referer;
-          uint _paso = 0;
+
+          network = allnetwork(network);
           
-          for (uint i = _paso; i < network.length; i++) {
+          for (uint i = 0; i < network.length; i++) {
           
             referer = investors[network[i]];
             rigth += referer.invested;
@@ -430,7 +454,6 @@ contract SITEBinary is Ownable{
             
         }
       }
-      withdrawableBinary(referer_izquierda.referer);
     } 
   }
 
@@ -440,9 +463,6 @@ contract SITEBinary is Ownable{
 
     Hand storage referer_izquierda = handLeft[any_user];
     Hand storage referer_derecha = handRigth[any_user];
-
-    Hand storage investor_izquierda = handLeft[any_user];
-    Hand storage investor_derecha = handRigth[any_user];
 
     if ( referer_izquierda.referer != address(0)) {
 
@@ -462,13 +482,11 @@ contract SITEBinary is Ownable{
       }
         
     }
-      
-    left -= investor_izquierda.reclamados.add(investor_izquierda.lost);
     
     if ( referer_derecha.referer != address(0)) {
         
       address[] memory network;
-      
+
       network = actualizarNetwork(network);
 
       network[0] = referer_derecha.referer;
@@ -482,8 +500,6 @@ contract SITEBinary is Ownable{
         pRigth++;
       }
     }
-
-    rigth -= investor_derecha.reclamados.add(investor_derecha.lost);
 
   }
 

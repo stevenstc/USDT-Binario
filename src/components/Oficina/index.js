@@ -25,7 +25,12 @@ export default class Oficina extends Component {
       personasIzquierda: 0,
       puntosIzquierda: 0,
       personasDerecha: 0,
-      puntosDerecha: 0
+      puntosDerecha: 0,
+      bonusBinario: 0,
+      puntosEfectivosIzquierda: 0,
+      puntosEfectivosDerecha: 0,
+      puntosReclamadosIzquierda: 0,
+      puntosReclamadosDerecha: 0,
 
     };
 
@@ -73,7 +78,11 @@ export default class Oficina extends Component {
 
       let loc = document.location.href;
       if(loc.indexOf('?')>0){
-        loc = loc.split('?')[0]
+        loc = loc.split('?')[0];
+      }
+
+      if(loc.indexOf('#')>0){
+        loc = loc.split('#')[0];
       }
       let mydireccion = await window.tronWeb.trx.getAccount();
       mydireccion = window.tronWeb.address.fromHex(mydireccion.address)
@@ -102,15 +111,40 @@ export default class Oficina extends Component {
     var contractUSDT = await tronUSDT.contract().at(cons.USDT);
     var decimales = await contractUSDT.decimals().call();
 
+    console.log(esto);
+
+    var usuario = esto;
+    usuario.inicio = parseInt(usuario.inicio._hex)*1000;
+    usuario.invested = parseInt(usuario.invested);
+    usuario.withdrawn = parseInt(usuario.withdrawn._hex);
+    
+    var tiempo = await Utils.contract.tiempo().call();
+    tiempo = parseInt(tiempo._hex)*1000;
+
+    var porcentiempo = ((Date.now()-usuario.inicio)*100)/tiempo;
+
+    let valorPlan = await Utils.contract.plans(usuario.plan._hex).call();
+    let porcent = await Utils.contract.porcent().call();
+    valorPlan = parseInt(valorPlan._hex)*parseInt(porcent._hex)/100;
+
+    var progresoUsdt = ((valorPlan-(usuario.invested*2-usuario.withdrawn))*100)/valorPlan;
+
+    var fecha = new Date(usuario.inicio+tiempo);
+    fecha = ""+fecha;
+
     this.setState({
       direccion: window.tronWeb.address.fromHex(direccion.address),
       registered: esto.registered,
       balanceRef: parseInt(esto.balanceRef._hex)/10**decimales,
       totalRef: parseInt(esto.totalRef._hex)/10**decimales,
-      invested: parseInt(esto.invested._hex)/10**decimales,
+      invested: parseInt(esto.invested)/10**decimales,
       paidAt: parseInt(esto.paidAt._hex)/10**decimales,
       my: parseInt(My.amount._hex)/10**decimales,
-      withdrawn: parseInt(esto.withdrawn._hex)/10**decimales
+      withdrawn: parseInt(esto.withdrawn)/10**decimales,
+      porcentiempo: porcentiempo,
+      progresoUsdt: progresoUsdt,
+      valorPlan: valorPlan/10**decimales,
+      fecha: fecha,
     });
 
   };
@@ -128,17 +162,33 @@ export default class Oficina extends Component {
   async Investors3() {
 
     let direccion = await window.tronWeb.trx.getAccount();
+
+    //Personas y puntos totales
     let puntos = await Utils.contract.personasBinary(direccion.address).call();
 
-    //console.log(puntos);    
+    // monto de bonus y puntos efectivos
+    let bonusBinario = await Utils.contract.withdrawableBinary(direccion.address).call();
+
+    let brazoIzquierdo = await Utils.contract.handLeft(direccion.address).call();
+
+    let brazoDerecho = await Utils.contract.handRigth(direccion.address).call();
+
+
 
     this.setState({
       personasIzquierda: parseInt(puntos.pLeft._hex),
-      puntosIzquierda: parseInt(puntos.left._hex)/10**8,
       personasDerecha: parseInt(puntos.pRigth._hex),
-      puntosDerecha: parseInt(puntos.rigth._hex)/10**8
 
+      puntosIzquierda: parseInt(puntos.left._hex)/10**8,
+      puntosDerecha: parseInt(puntos.rigth._hex)/10**8,
 
+      bonusBinario: parseInt(bonusBinario.amount._hex)/10**8,
+
+      puntosEfectivosIzquierda: parseInt(bonusBinario.left._hex)/10**8,
+      puntosEfectivosDerecha: parseInt(bonusBinario.rigth._hex)/10**8,
+
+      puntosReclamadosIzquierda: parseInt(brazoIzquierdo.reclamados._hex)/10**8,
+      puntosReclamadosDerecha: parseInt(brazoDerecho.reclamados._hex)/10**8,
     });
 
   };
@@ -162,7 +212,7 @@ export default class Oficina extends Component {
       await Utils.contract.withdraw().send();
     }else{
       if (available < MIN_RETIRO) {
-        window.alert("El minimo para retirar son: "+(MIN_RETIRO)+" SITE");
+        window.alert("El minimo para retirar son: "+(MIN_RETIRO)+" USDT");
       }
     }
   };
@@ -171,7 +221,7 @@ export default class Oficina extends Component {
   render() {
     var { balanceRef, invested, my, direccion, link, link2} = this.state;
 
-    var available = (balanceRef+my);
+    var available = (balanceRef+my+this.state.bonusBinario);
     available = available.toFixed(2);
     available = parseFloat(available);
 
@@ -220,7 +270,11 @@ export default class Oficina extends Component {
             <div className="box">
               <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
               <p className="description">Equipo Izquierdo ({this.state.personasIzquierda})</p>
-              <h4 className="title"><a href="#services">{this.state.puntosIzquierda} puntos</a></h4>
+              <h4 className="title"><a href="#services">Disponible {this.state.puntosEfectivosIzquierda} pts</a></h4>
+              <p className="description">Reclamado {this.state.puntosReclamadosIzquierda} pts</p>
+              <hr />
+              <p className="description">Total {this.state.puntosIzquierda} pts</p>
+
 
             </div>
           </div>
@@ -228,7 +282,10 @@ export default class Oficina extends Component {
             <div className="box">
               <div className="icon"><i className="ion-ios-paper-outline" style={{color: '#3fcdc7'}}></i></div>
               <p className="description">Equipo Derecho ({this.state.personasDerecha})</p>
-              <h4 className="title"><a href="#services"> {this.state.puntosDerecha} puntos</a></h4>
+              <h4 className="title"><a href="#services">Disponible {this.state.puntosEfectivosDerecha} pts</a></h4>
+              <p className="description">Reclamado {this.state.puntosReclamadosDerecha} pts</p>
+              <hr />
+              <p className="description">Total {this.state.puntosDerecha} pts</p>
 
             </div>
           </div>
@@ -236,31 +293,49 @@ export default class Oficina extends Component {
           <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-analytics-outline" style={{color: '#ff689b'}}></i></div>
-              <h4 className="title"><a href="#services">{invested} USDT</a></h4> (~ {(this.state.invested/this.state.precioSITE).toFixed(2)} SITE)
-              <p className="description">Total invertido</p>
+              
+              <h4 className="title"><a href="#services">Disponible {available} USDT</a></h4>
+                
+              <button type="button" className="btn btn-info d-block text-center mx-auto mt-1" onClick={() => this.withdraw()}>Retirar ~ {(available/this.state.precioSITE).toFixed(2)} SITE</button>
+                 
+              
+              <hr></hr>
+              <p className="description">Retirado {(this.state.withdrawn).toFixed(2)} USDT </p>
+              <p className="description">Total invertido {invested} USDT </p>
             </div>
           </div>
           <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-analytics-outline" style={{color: '#ff689b'}}></i></div>
-              <h4 className="title"><a href="#services">{(this.state.balanceRef).toFixed(2)} USDT</a></h4> (~ {(this.state.balanceRef/this.state.precioSITE).toFixed(2)} SITE)
-              <p className="description">Bonus de Red</p>
+              <p className="description">Bonus </p>
+              <h4 className="title"><a href="#services">{(this.state.balanceRef+this.state.bonusBinario).toFixed(2)} USDT</a></h4>
+              <p>(~ {(this.state.balanceRef+this.state.bonusBinario/this.state.precioSITE).toFixed(2)} SITE)</p>
+              <hr></hr>
+              <p className="description">Referido directo {(this.state.balanceRef).toFixed(2)} USDT </p>
+              <p className="description">Red binaria {(this.state.bonusBinario).toFixed(2)} USDT </p>
+              
             </div>
           </div>
 
-          <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
+          <div className="col-md-12 col-lg-10 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
               <div className="icon"><i className="ion-ios-speedometer-outline" style={{color:'#41cf2e'}}></i></div>
-              <h4 className="title"><a href="#services">Disponible</a></h4>
-              <p className="description">{available} USDT</p> (~ {(available/this.state.precioSITE).toFixed(2)} SITE)
-              <button type="button" className="btn btn-info d-block text-center mx-auto mt-1" onClick={() => this.withdraw()}>Retirar</button>
-            </div>
-          </div>
-          <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
-            <div className="box">
-              <div className="icon"><i className="ion-ios-speedometer-outline" style={{color:'#41cf2e'}}></i></div>
-              <h4 className="title"><a href="#services">Retirado</a></h4>
-              <p className="description">{(this.state.withdrawn).toFixed(2)} USDT</p> (~ {(this.state.withdrawn/this.state.precioSITE).toFixed(2)} SITE)
+              <h4 className="title"><a href="#services">Progreso</a></h4>
+              <p className="description">Tiempo estimado de fin <b>{this.state.fecha}</b></p>
+              <div className="progress" style={{"height": "20px"}}>
+                <div className="progress-bar bg-success" role="progressbar" style={{"width": this.state.porcentiempo+"%"}} aria-valuenow={this.state.porcentiempo} aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <br></br>
+              <p className="description">Máximo a reclamar <b>{this.state.valorPlan} USDT</b></p>
+              <div className="progress" style={{"height": "20px"}}>
+                <div className="progress-bar bg-info " role="progressbar" style={{"width": this.state.progresoUsdt+"%"}} aria-valuenow={this.state.progresoUsdt} aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <br></br>
+
+              <p>
+                <a href="#why-us"><button type="button" className="btn btn-success d-block text-center mx-auto mt-1" >Upgrade Plan</button></a>
+              </p>
+
             </div>
           </div>
 

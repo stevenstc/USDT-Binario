@@ -81,7 +81,7 @@ export default class CrowdFunding extends Component {
         precio = parseInt(precio)/10**8;
         datos = {};
         datos.value = index;
-        datos.label = 'Plan Staking '+precio+' USDT';
+        datos.label = precio+' USDT';
         options[index] = datos;
         
       }
@@ -335,7 +335,7 @@ export default class CrowdFunding extends Component {
           <table className="table borderless">
             <tbody>
             <tr>
-              <td><i className="fa fa-check-circle-o text-success"></i>TASA E.A</td><td>{((((this.state.porcentaje)-100)*365)/(this.state.dias)).toFixed(2)}%</td>
+              <td><i className="fa fa-check-circle-o text-success"></i>TASA APY</td><td>{((((this.state.porcentaje)-100)*365)/(this.state.dias)).toFixed(2)}%</td>
             </tr>
             <tr>
               <td><i className="fa fa-check-circle-o text-success"></i>RETORNO TOTAL</td><td>{this.state.porcentaje}%</td>
@@ -344,7 +344,7 @@ export default class CrowdFunding extends Component {
               <td><i className="fa fa-check-circle-o text-success"></i>RECOMPENSA</td><td>{(this.state.porcentaje)-100}%</td>
             </tr>
             <tr>
-              <td><i className="fa fa-check-circle-o text-success"></i>Tiempo en días</td><td>{this.state.dias}</td>
+              <td><i className="fa fa-check-circle-o text-success"></i>TIEMPO EN DÍAS</td><td>{this.state.dias}</td>
             </tr>
             </tbody>
           </table>
@@ -360,8 +360,9 @@ export default class CrowdFunding extends Component {
             USDT: <strong>{(this.state.balanceUSDT*1).toFixed(6)}</strong><br />
           </p>
 
-          <div className="input-group mb-3 text-center">
-          <Select options={options}  onChange={this.handleChangeUSDT} className="form-control mb-20 h-auto" />
+          <h4>Plan Staking</h4>
+          <div className="input-group sm-3 text-center">
+            <Select options={options}  onChange={this.handleChangeUSDT} className="form-control mb-20 h-auto" />
           </div>
 
             <p className="card-text">Recomendamos tener más de 150 TRX para ejecutar las transacciones correctamente</p>
