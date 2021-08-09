@@ -221,7 +221,7 @@ export default class CrowdFunding extends Component {
     porcentaje = parseInt(porcentaje);
 
     var balancesite = await contractSITE.balanceOf(accountAddress).call();
-    balancesite = parseInt(balancesite._hex);
+    balancesite = parseInt(balancesite._hex)/10**8;
 
     var balanceTRX = await window.tronWeb.trx.getBalance();
     balanceTRX = balanceTRX/10**6;
