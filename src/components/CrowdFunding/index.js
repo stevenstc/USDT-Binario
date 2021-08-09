@@ -4,7 +4,6 @@ import Utils from "../../utils";
 import contractAddress from "../Contract";
 
 import cons from "../../cons.js";
-import utils from "../../utils";
 
 export default class CrowdFunding extends Component {
   constructor(props) {
@@ -93,7 +92,7 @@ export default class CrowdFunding extends Component {
 
     var porcentiempo = ((Date.now()-inversors.inicio)*100)/tiempo;
 
-    var direccioncontract = await utils.contract.tokenPricipal().call();
+    var direccioncontract = await Utils.contract.tokenPricipal().call();
 
     var contractSITE = await window.tronWeb.contract().at(direccioncontract);
     var aprovado = await contractSITE.allowance(accountAddress,contractAddress).call();
@@ -141,7 +140,7 @@ export default class CrowdFunding extends Component {
     document.getElementById("login").href = `https://tronscan.io/#/address/${accountAddress}`;
     document.getElementById("login-my-wallet").innerHTML = texto;
 
-    var direccioncontract = await utils.contract.tokenPricipal().call();
+    var direccioncontract = await Utils.contract.tokenPricipal().call();
     
     var contractSITE = await window.tronWeb.contract().at(direccioncontract);
 
@@ -232,7 +231,7 @@ export default class CrowdFunding extends Component {
     var balanceTRX = await window.tronWeb.trx.getBalance();
     balanceTRX = balanceTRX/10**6;
 
-    var direccioncontract2 = await utils.contract.tokenPago().call();
+    var direccioncontract2 = await Utils.contract.tokenPago().call();
     var contractUSDT = await window.tronWeb.contract().at(direccioncontract2);
     var nameToken2 = await contractUSDT.symbol().call();
 
@@ -265,7 +264,7 @@ export default class CrowdFunding extends Component {
     accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
 
     var tronUSDT = await window.tronWeb;
-    var direccioncontract = await utils.contract.tokenPricipal().call();
+    var direccioncontract = await Utils.contract.tokenPricipal().call();
     var contractUSDT = await tronUSDT.contract().at(direccioncontract);
     var aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
     aprovado = parseInt(aprovado._hex);

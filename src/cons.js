@@ -3,10 +3,8 @@ const PRU = "shasta.";// red
 
 const PRE = "https://precio-site.herokuapp.com/api/v1/servicio/precio/SITE";// red 
 
-const WS = "T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb";//T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb recibe los huerfanos por defecto
+const WS = "TB7RTxBPY4eMvKjceXj8SWjVnZCrWr4XvF";//T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb recibe los huerfanos por defecto
 
-const SC = "TNdKCoMwQA1TwLwi44dg1di7CDWYu3qUDH";// direccion del contrato
+const SC = "TY7yrp4v7rxGsDAV1TfhidpoLbqAXaSzpn";// direccion del contrato
 
-const USDT = "TFXKvqoKecmfKksaB7cZpS4eLhrAHu4gFd";// USDT contract or token trc20
-
-export default {proxy, PRU, WS,  SC, USDT, PRE};
+export default {proxy, PRU, WS,  SC, PRE};

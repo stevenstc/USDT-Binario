@@ -35,13 +35,14 @@ contract SITEBinary is Ownable{
   }
 
   uint256 public MIN_RETIRO = 1*10**8;
+  uint256 public MIN_RETIRO_interno;
 
   address public tokenPricipal;
   address public tokenPago;
 
-  uint256 public rate = 1650000;
-  uint256 public rate2 = 1650000;
-  uint256 public rateDescuento;
+  uint256 public rate = 1680000;
+  uint256 public rate2 = 1680000;
+  uint256 public rateDescuento = 2;
 
   uint256[5] public primervez = [100, 0, 0, 0, 0];
 
@@ -91,13 +92,17 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setRate(uint256 _rate) public onlyOwner {
+  function setRate(uint256 _rate) public {
+
+    require( owner == msg.sender || api == msg.sender, "No tienes autorizacion");
 
     rate = _rate;
 
   }
 
-  function setRate2(uint256 _rate) public onlyOwner {
+  function setRate2(uint256 _rate) public {
+
+    require( owner == msg.sender || api == msg.sender, "No tienes autorizacion");
 
     rate2 = _rate;
 
@@ -120,7 +125,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setRateSellApi(address _wallet) public onlyOwner returns(address){
+  function setWalletApi(address _wallet) public onlyOwner returns(address){
 
     api = _wallet;
 
@@ -137,7 +142,7 @@ contract SITEBinary is Ownable{
 
   function setMIN_RETIRO(uint256 _min) public onlyOwner returns(uint256){
 
-    MIN_RETIRO = _min*10**SALIDA_Contract.decimals();
+    MIN_RETIRO = _min;
 
     return _min;
 
@@ -322,7 +327,7 @@ contract SITEBinary is Ownable{
   }
 
   function payValue(uint256 _value ) view public returns (uint256){
-    return _value.mul(10**SALIDA_Contract.decimals()).div(rate);
+    return _value.mul(10**SALIDA_Contract.decimals()).div(rateSell());
   }
 
   function buyPlan(uint256 _plan, address _sponsor, uint256 _hand) public {
@@ -332,7 +337,7 @@ contract SITEBinary is Ownable{
 
     Investor storage usuario = investors[msg.sender];
     if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
-      withdraw();
+      withdrawInternal();
       upGradePlan(_plan);
     }else{
 
@@ -422,7 +427,7 @@ contract SITEBinary is Ownable{
   function upGradePlan(uint256 _plan) internal {
 
     Investor storage usuario = investors[msg.sender];
-    require (_plan > usuario.plan, "tiene que se un plan mayor para hacer upgrade");
+    require (_plan > usuario.plan, "tiene que ser un plan mayor para hacer upgrade");
 
     uint256 _value = plans[_plan].sub(plans[usuario.plan]);
 
@@ -636,54 +641,96 @@ contract SITEBinary is Ownable{
     }
   }
 
-  function profit() internal returns (uint256) {
+  function profit() internal view returns (uint256, uint256, uint256, bool) {
     Investor storage investor = investors[msg.sender];
-    Hand storage izquierda = handLeft[msg.sender];
-    Hand storage derecha = handRigth[msg.sender];
 
     uint256 amount;
+    uint256 binary;
     
-    uint256 amountB;
     uint256 left;
     uint256 rigth;
-    
-    (left, rigth, amountB) = withdrawableBinary(msg.sender);
 
-    if (left != 0 && rigth != 0 && amountB != 0 && investor.directos >= 2){
+    bool gana;
+    
+    (left, rigth, binary) = withdrawableBinary(msg.sender);
+
+    if (left != 0 && rigth != 0 && binary != 0 && investor.directos >= 2){
     
       if (investor.inicio.add(tiempo()) >= block.timestamp){
       
         if(left < rigth){
-          derecha.reclamados += left;
-          izquierda.reclamados += left;
+          rigth = left;
             
         }else{
-          derecha.reclamados += rigth;
-          izquierda.reclamados += rigth;
+          left = rigth;
             
         }
-        investor.amount -= amountB.div(porcent.div(100));
-        amount += amountB;
+        gana = true;
+        if (investor.amount >= binary.div(porcent.div(100))) {
+          amount += binary;
+        }else{
+          amount += investor.amount;
+        }
         
-      }else{
-          
-        derecha.lost += rigth;
-        izquierda.lost += left;
-              
       }
     }
 
-    amount += withdrawable(msg.sender);
+    if (investor.amount >= withdrawable(msg.sender).div(porcent.div(100))) {
+      amount += withdrawable(msg.sender);
+    }else{
+      amount += investor.amount;
+    }
 
     if (investor.amount >= investor.balanceRef.div(porcent.div(100))) {
       amount += investor.balanceRef;
+    }else{
+      amount += investor.amount;
     }
 
-    investor.balanceRef = 0;
+    return (amount, left, rigth, gana);
 
-    investor.paidAt = block.timestamp;
+  }
 
-    return (amount);
+  function withdrawInternal() internal {
+
+    Investor storage usuario = investors[msg.sender];
+    uint256 amount;
+    uint256 left;
+    uint256 rigth;
+    bool gana;
+    
+    (amount, left, rigth, gana) = profit();
+
+    require ( SALIDA_Contract.balanceOf(address(this)) >= payValue(amount), "The contract has no balance");
+    require ( amount >= MIN_RETIRO_interno, "The minimum withdrawal limit reached");
+    require ( SALIDA_Contract.transfer(msg.sender,payValue(amount)), "whitdrawl Fail" );
+
+    if (gana) {
+      Hand storage izquierda = handLeft[msg.sender];
+      Hand storage derecha = handRigth[msg.sender];
+
+      if(left < rigth){
+        derecha.reclamados += left;
+        izquierda.reclamados += left;
+          
+      }else{
+        derecha.reclamados += rigth;
+        izquierda.reclamados += rigth;
+          
+      }
+      
+    } else {
+      Hand storage izquierda = handLeft[msg.sender];
+      Hand storage derecha = handRigth[msg.sender];
+
+      derecha.lost += rigth;
+      izquierda.lost += left;
+      
+    }
+
+    usuario.paidAt = block.timestamp;
+    usuario.withdrawn += amount;
+    usuario.balanceRef = 0;
 
   }
 
@@ -691,28 +738,42 @@ contract SITEBinary is Ownable{
 
     Investor storage usuario = investors[msg.sender];
     uint256 amount;
-    uint256 amountB;
     uint256 left;
     uint256 rigth;
+    bool gana;
     
-    (left, rigth, amountB) = withdrawableBinary(msg.sender);
+    (amount, left, rigth, gana) = profit();
 
-    if (usuario.directos >= 2) {
-      amount = amountB;
+    require ( SALIDA_Contract.balanceOf(address(this)) >= payValue(amount), "The contract has no balance");
+    require ( amount >= MIN_RETIRO, "The minimum withdrawal limit reached");
+    require ( SALIDA_Contract.transfer(msg.sender,payValue(amount)), "whitdrawl Fail" );
+
+    if (gana) {
+      Hand storage izquierda = handLeft[msg.sender];
+      Hand storage derecha = handRigth[msg.sender];
+
+      if(left < rigth){
+        derecha.reclamados += left;
+        izquierda.reclamados += left;
+          
+      }else{
+        derecha.reclamados += rigth;
+        izquierda.reclamados += rigth;
+          
+      }
+      
+    } else {
+      Hand storage izquierda = handLeft[msg.sender];
+      Hand storage derecha = handRigth[msg.sender];
+
+      derecha.lost += rigth;
+      izquierda.lost += left;
+      
     }
 
-    amount += withdrawable(msg.sender)+usuario.balanceRef;
-
-    uint256 _pay = amount.mul(10**SALIDA_Contract.decimals()).div(rateSell());
-
-    require ( SALIDA_Contract.balanceOf(address(this)) >= amount, "The contract has no balance");
-    require ( amount >= MIN_RETIRO, "The minimum withdrawal limit reached");
-
-    require ( SALIDA_Contract.transfer(msg.sender,_pay), "whitdrawl Fail" );
-
-    profit();
-
+    usuario.paidAt = block.timestamp;
     usuario.withdrawn += amount;
+    usuario.balanceRef = 0;
 
   }
 

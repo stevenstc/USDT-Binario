@@ -45,8 +45,8 @@ export default class Datos extends Component {
 
     let esto = await Utils.contract.setstate().call();
 
-    var tronUSDT = await window.tronWeb;
-    var contractUSDT = await tronUSDT.contract().at(cons.USDT);
+    var direccioncontract = await Utils.contract.tokenPago().call();
+    var contractUSDT = await window.tronWeb.contract().at(direccioncontract);
     var decimales = await contractUSDT.decimals().call();
     //console.log(esto);
     this.setState({

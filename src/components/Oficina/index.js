@@ -109,7 +109,8 @@ export default class Oficina extends Component {
     let My = await Utils.contract.withdrawable(direccion.address).call();
     
     var tronUSDT = await window.tronWeb;
-    var contractUSDT = await tronUSDT.contract().at(cons.USDT);
+    var direccioncontract = await Utils.contract.tokenPricipal().call();
+    var contractUSDT = await tronUSDT.contract().at(direccioncontract); 
     var decimales = await contractUSDT.decimals().call();
 
     var usuario = esto;
