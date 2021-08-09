@@ -204,8 +204,8 @@ export default class Oficina extends Component {
     available = available.toFixed(8);
     available = parseFloat(available);
 
-    var tronUSDT = await window.tronWeb;
-    var contractUSDT = await tronUSDT.contract().at(cons.USDT);
+    var direccioncontract = await Utils.contract.tokenPricipal().call();
+    var contractUSDT = await window.tronWeb.contract().at(direccioncontract);
 
     var decimales = await contractUSDT.decimals().call();
 
