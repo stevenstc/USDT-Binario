@@ -40,6 +40,7 @@ contract SITEBinary is Ownable{
   address public tokenPago;
 
   uint256 public rate = 1650000;
+  uint256 public rate2 = 1650000;
   uint256 public rateDescuento;
 
   uint256[5] public primervez = [100, 0, 0, 0, 0];
@@ -96,6 +97,12 @@ contract SITEBinary is Ownable{
 
   }
 
+  function setRate2(uint256 _rate) public onlyOwner {
+
+    rate2 = _rate;
+
+  }
+
   function setRateSellDescuento(uint256 _porcentaje) public onlyOwner returns(uint256){
 
     rateDescuento = _porcentaje;
@@ -105,7 +112,11 @@ contract SITEBinary is Ownable{
 
   function rateSell() public view returns(uint256){
 
-    return rate.sub(rate.mul(rateDescuento).div(100));
+    if (tokenPricipal == tokenPago) {
+      return rate.sub(rate.mul(rateDescuento).div(100));
+    } else {
+      return rate2.sub(rate2.mul(rateDescuento).div(100));
+    }
 
   }
 
@@ -142,7 +153,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function ChangeTokenSecundario(address _tokenTRC20) public onlyOwner returns (bool){
+  function ChangeTokenSalida(address _tokenTRC20) public onlyOwner returns (bool){
 
     SALIDA_Contract = TRC20_Interface(_tokenTRC20);
 
@@ -321,6 +332,7 @@ contract SITEBinary is Ownable{
 
     Investor storage usuario = investors[msg.sender];
     if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
+      withdraw();
       upGradePlan(_plan);
     }else{
 
@@ -675,7 +687,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function withdraw() external {
+  function withdraw() public {
 
     Investor storage usuario = investors[msg.sender];
     uint256 amount;

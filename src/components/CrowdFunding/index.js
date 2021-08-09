@@ -4,6 +4,7 @@ import Utils from "../../utils";
 import contractAddress from "../Contract";
 
 import cons from "../../cons.js";
+import utils from "../../utils";
 
 export default class CrowdFunding extends Component {
   constructor(props) {
@@ -92,12 +93,14 @@ export default class CrowdFunding extends Component {
 
     var porcentiempo = ((Date.now()-inversors.inicio)*100)/tiempo;
 
-    var contractSITE = await window.tronWeb.contract().at(cons.USDT);
+    var direccioncontract = await utils.contract.tokenPricipal().call();
+
+    var contractSITE = await window.tronWeb.contract().at(direccioncontract);
     var aprovado = await contractSITE.allowance(accountAddress,contractAddress).call();
     aprovado = parseInt(aprovado._hex);
 
     if(porcentiempo >= 100){
-      inversors.plan = 0;
+      inversors.plan = 1;
     }else{
       inversors.plan++;
     }
@@ -138,7 +141,13 @@ export default class CrowdFunding extends Component {
     document.getElementById("login").href = `https://tronscan.io/#/address/${accountAddress}`;
     document.getElementById("login-my-wallet").innerHTML = texto;
 
-    var contractSITE = await window.tronWeb.contract().at(cons.USDT);
+    var direccioncontract = await utils.contract.tokenPricipal().call();
+    
+    var contractSITE = await window.tronWeb.contract().at(direccioncontract);
+
+    var nameToken1 = await contractSITE.symbol().call();
+
+    //console.log(nameToken1);
 
     var aprovado = await contractSITE.allowance(accountAddress,contractAddress).call();
     //console.log(aprovado);
@@ -220,13 +229,12 @@ export default class CrowdFunding extends Component {
 
     porcentaje = parseInt(porcentaje);
 
-    var balancesite = await contractSITE.balanceOf(accountAddress).call();
-    balancesite = parseInt(balancesite._hex)/10**8;
-
     var balanceTRX = await window.tronWeb.trx.getBalance();
     balanceTRX = balanceTRX/10**6;
 
-    var contractUSDT = await window.tronWeb.contract().at(cons.USDT);
+    var direccioncontract2 = await utils.contract.tokenPago().call();
+    var contractUSDT = await window.tronWeb.contract().at(direccioncontract2);
+    var nameToken2 = await contractUSDT.symbol().call();
 
     var balanceUSDT = await contractUSDT.balanceOf(accountAddress).call();
 
@@ -240,9 +248,11 @@ export default class CrowdFunding extends Component {
       porcentaje: porcentaje,
       dias: dias,
       partner: partner,
-      balanceSite: balancesite,
+      balanceSite: balance,
       balanceTRX: balanceTRX,
       balanceUSDT: balanceUSDT,
+      nameToken1: nameToken1,
+      nameToken2: nameToken2
     });
   }
 
@@ -255,7 +265,8 @@ export default class CrowdFunding extends Component {
     accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
 
     var tronUSDT = await window.tronWeb;
-    var contractUSDT = await tronUSDT.contract().at(cons.USDT);
+    var direccioncontract = await utils.contract.tokenPricipal().call();
+    var contractUSDT = await tronUSDT.contract().at(direccioncontract);
     var aprovado = await contractUSDT.allowance(accountAddress,contractAddress).call();
     aprovado = parseInt(aprovado._hex);
 
@@ -325,7 +336,7 @@ export default class CrowdFunding extends Component {
 
           window.alert("Felicidades inversión exitosa");
 
-          document.getElementById("services").scrollIntoView({block: "end", behavior: "smooth"});;
+          document.getElementById("services").scrollIntoView({block: "end", behavior: "smooth"});
         
 
 
@@ -380,9 +391,9 @@ export default class CrowdFunding extends Component {
           </p>
           <p className="card-text ">
         
-            SITE: <strong>{this.state.balance}</strong> (${(this.state.balance*this.state.precioSITE).toFixed(2)})<br />
+            {this.state.nameToken1}: <strong>{this.state.balance}</strong> (${(this.state.balance*this.state.precioSITE).toFixed(2)})<br />
             TRX: <strong>{(this.state.balanceTRX*1).toFixed(6)}</strong><br />
-            USDT: <strong>{(this.state.balanceUSDT*1).toFixed(6)}</strong><br />
+            {this.state.nameToken2}: <strong>{(this.state.balanceUSDT*1).toFixed(6)}</strong><br />
           </p>
 
           <h4>Plan Staking</h4>

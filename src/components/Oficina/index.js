@@ -246,11 +246,39 @@ export default class Oficina extends Component {
       <div className="container">
 
         <header style={{'textAlign': 'center'}} className="section-header">
-          <h3 className="white"><i className="fa fa-user mr-2" aria-hidden="true"></i><span style={{'fontWeight': 'bold'}}>
-          Mi Oficina:</span> <br></br>
-          <span style={{'fontSize': '11px'}}>{direccion}</span></h3><br></br>
+          <h3 className="white">
+            <i className="fa fa-user mr-2" aria-hidden="true"></i>
+            <span style={{'fontWeight': 'bold'}}>
+              Mi Oficina:
+            </span>
+          </h3>
           <div className="row text-center">
-            <div className="col-md-6" >
+            <div className="col-md-12 col-lg-10 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
+              <div className="box">
+                <h4 className="title"><a href={"https://tronscan.io/#/address/"+direccion} style={{"wordWrap": "break-word"}}>{direccion}</a></h4>
+                Tiempo estimado de fin <b>{this.state.fecha}</b>
+                <div className="progress" style={{"height": "20px"}}>
+                  <div className="progress-bar-striped progress-bar-animated bg-success" role="progressbar" style={{"width": this.state.porcentiempo+"%"}} aria-valuenow={this.state.porcentiempo} aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <br></br>
+                <b>{(this.state.withdrawn+available).toFixed(2)} USDT</b> ganancias de <b>{this.state.valorPlan} USDT</b>
+                <div className="progress" style={{"height": "20px"}}>
+                  <div className="progress-bar bg-info " role="progressbar" style={{"width": this.state.progresoUsdt+"%"}} aria-valuenow={this.state.progresoUsdt} aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+    
+                <div className="progress" style={{"height": "20px"}}>
+                  <div className="progress-bar bg-warning " role="progressbar" style={{"width": this.state.progresoUsdt+"%"}} aria-valuenow={this.state.progresoUsdt} aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                Reclamados <b>{(this.state.withdrawn).toFixed(2)} USDT</b>
+
+                <br></br>
+                <button type="button" className="btn btn-success d-block text-center mx-auto mt-1" onClick={() => document.getElementById("why-us").scrollIntoView({block: "end", behavior: "smooth"}) }>Upgrade Plan</button>
+
+
+              </div>
+            </div>
+
+            <div className="col-md-5 offset-lg-1" >
               <h3 className="white" style={{'fontWeight': 'bold'}}><i className="fa fa-arrow-left mr-2" aria-hidden="true"></i>Mano izquierda</h3>
               <h6 className="white" style={{'padding': '1.5em', 'fontSize': '11px'}}><a href={link}>{link}</a> <br /><br />
               <CopyToClipboard text={link}>
@@ -259,7 +287,8 @@ export default class Oficina extends Component {
               </h6>
               <hr></hr>
             </div>
-            <div className="col-md-6" >
+
+            <div className="col-md-5 " >
               <h3 className="white" style={{'fontWeight': 'bold'}}>Mano derecha <i className="fa fa-arrow-right mr-2" aria-hidden="true"></i></h3>
               <h6 className="white" style={{'padding': '1.5em', 'fontSize': '11px'}}><a href={link2}>{link2}</a> <br /><br />
               <CopyToClipboard text={link2}>
@@ -307,8 +336,8 @@ export default class Oficina extends Component {
                  
               
               <hr></hr>
-              <p className="description">Retirado {(this.state.withdrawn).toFixed(2)} USDT </p>
-              <p className="description">Total invertido {invested} USDT </p>
+              <p className="description">Retirado <b>{(this.state.withdrawn).toFixed(2)} USDT</b> </p>
+              <p className="description">Total invertido <b>{invested} USDT</b> </p>
             </div>
           </div>
           <div className="col-md-6 col-lg-5 wow bounceInUp" data-wow-duration="1s">
@@ -321,28 +350,6 @@ export default class Oficina extends Component {
               <p className="description">({this.state.directos}) Referidos directos <b>{(this.state.balanceRef).toFixed(2)} USDT</b> </p>
               <p className="description">({this.state.personasDerecha+this.state.personasIzquierda}) Red binaria <b>{(this.state.bonusBinario).toFixed(2)} USDT</b> </p>
               
-            </div>
-          </div>
-
-          <div className="col-md-12 col-lg-10 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
-            <div className="box">
-              <div className="icon"><i className="ion-ios-speedometer-outline" style={{color:'#41cf2e'}}></i></div>
-              <h4 className="title"><a href="#services">Progreso</a></h4>
-              <p className="description">Tiempo estimado de fin <b>{this.state.fecha}</b></p>
-              <div className="progress" style={{"height": "20px"}}>
-                <div className="progress-bar bg-success" role="progressbar" style={{"width": this.state.porcentiempo+"%"}} aria-valuenow={this.state.porcentiempo} aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-              <br></br>
-              <p className="description"><b>{(this.state.withdrawn).toFixed(2)} USDT</b> reclamados de <b>{this.state.valorPlan} USDT</b></p>
-              <div className="progress" style={{"height": "20px"}}>
-                <div className="progress-bar bg-info " role="progressbar" style={{"width": this.state.progresoUsdt+"%"}} aria-valuenow={this.state.progresoUsdt} aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-              <br></br>
-
-              <p>
-                <a href="#why-us"><button type="button" className="btn btn-success d-block text-center mx-auto mt-1" >Upgrade Plan</button></a>
-              </p>
-
             </div>
           </div>
 
