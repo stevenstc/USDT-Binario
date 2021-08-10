@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.js": "/BINARIO-SITE/static/js/main.fa76cde3.chunk.js",
-    "main.js.map": "/BINARIO-SITE/static/js/main.fa76cde3.chunk.js.map",
+    "main.js": "/BINARIO-SITE/static/js/main.90edcfe7.chunk.js",
+    "main.js.map": "/BINARIO-SITE/static/js/main.90edcfe7.chunk.js.map",
     "runtime-main.js": "/BINARIO-SITE/static/js/runtime-main.11ff97c4.js",
     "runtime-main.js.map": "/BINARIO-SITE/static/js/runtime-main.11ff97c4.js.map",
     "static/js/2.8fe7f426.chunk.js": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js",
     "static/js/2.8fe7f426.chunk.js.map": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js.map",
     "index.html": "/BINARIO-SITE/index.html",
-    "precache-manifest.332ed457d857987256838d6c78d951c8.js": "/BINARIO-SITE/precache-manifest.332ed457d857987256838d6c78d951c8.js",
+    "precache-manifest.9975e28cb0a78f84c9171d8aa2ee167f.js": "/BINARIO-SITE/precache-manifest.9975e28cb0a78f84c9171d8aa2ee167f.js",
     "service-worker.js": "/BINARIO-SITE/service-worker.js",
     "static/js/2.8fe7f426.chunk.js.LICENSE.txt": "/BINARIO-SITE/static/js/2.8fe7f426.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.11ff97c4.js",
     "static/js/2.8fe7f426.chunk.js",
-    "static/js/main.fa76cde3.chunk.js"
+    "static/js/main.90edcfe7.chunk.js"
   ]
 }
