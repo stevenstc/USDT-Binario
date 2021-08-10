@@ -32,6 +32,8 @@ export default class Oficina extends Component {
       puntosEfectivosDerecha: 0,
       puntosReclamadosIzquierda: 0,
       puntosReclamadosDerecha: 0,
+      puntosLostIzquierda: 0,
+      puntosLostDerecha: 0,
       directos: 0,
 
     };
@@ -114,7 +116,7 @@ export default class Oficina extends Component {
     var contractUSDT = await tronUSDT.contract().at(direccioncontract); 
     var decimales = await contractUSDT.decimals().call();
 
-    console.log(usuario);
+    //console.log(usuario);
 
     usuario.inicio = parseInt(usuario.inicio._hex)*1000;
     usuario.amount = parseInt(usuario.amount._hex);
@@ -128,7 +130,7 @@ export default class Oficina extends Component {
     usuario.plan = parseInt(usuario.plan._hex);
     usuario.withdrawable = parseInt(usuario.withdrawable.amount._hex);
 
-    console.log(usuario);
+    //console.log(usuario);
 
     var tiempo = await Utils.contract.tiempo().call();
     tiempo = parseInt(tiempo._hex)*1000;
@@ -178,6 +180,8 @@ export default class Oficina extends Component {
 
   async Investors3() {
 
+    var {balanceRef, my, almacen, directos, valorPlan } = this.state;
+
     let direccion = await window.tronWeb.trx.getAccount();
 
     //Personas y puntos totales
@@ -185,12 +189,20 @@ export default class Oficina extends Component {
 
     // monto de bonus y puntos efectivos
     let bonusBinario = await Utils.contract.withdrawableBinary(direccion.address).call();
+  
+    var available = (balanceRef+my+almacen);
+
+    if(directos >= 2 && available < valorPlan ){
+      bonusBinario.amount = parseInt(bonusBinario.amount._hex)/10**8;
+    }else{
+      bonusBinario.amount = 0;
+    }
 
     let brazoIzquierdo = await Utils.contract.handLeft(direccion.address).call();
 
     let brazoDerecho = await Utils.contract.handRigth(direccion.address).call();
 
-
+    //console.log(brazoDerecho);
 
     this.setState({
       personasIzquierda: parseInt(puntos.pLeft._hex),
@@ -199,7 +211,7 @@ export default class Oficina extends Component {
       puntosIzquierda: parseInt(puntos.left._hex)/10**8,
       puntosDerecha: parseInt(puntos.rigth._hex)/10**8,
 
-      bonusBinario: parseInt(bonusBinario.amount._hex)/10**8,
+      bonusBinario: bonusBinario.amount,
 
       puntosEfectivosIzquierda: parseInt(bonusBinario.left._hex)/10**8,
       puntosEfectivosDerecha: parseInt(bonusBinario.rigth._hex)/10**8,
@@ -214,11 +226,11 @@ export default class Oficina extends Component {
   };
 
   async withdraw(){
-    const { balanceRef, my, almacen } = this.state;
+    const { balanceRef, my, almacen, directos, valorPlan, bonusBinario } = this.state;
 
     var available = (balanceRef+my+almacen);
-    if(this.state.directos >= 2){
-      available += this.state.bonusBinario;
+    if(directos >= 2 && available < valorPlan){
+      available += bonusBinario;
     }
     available = available.toFixed(8);
     available = parseFloat(available);
@@ -242,11 +254,11 @@ export default class Oficina extends Component {
 
 
   render() {
-    var { balanceRef, invested, my, direccion, link, link2, almacen} = this.state;
+    var { balanceRef, invested, my, direccion, link, link2, almacen, valorPlan, directos, bonusBinario} = this.state;
 
     var available = balanceRef+my+almacen;
-    if(this.state.directos >= 2){
-      available += this.state.bonusBinario;
+    if(directos >= 2 && available < valorPlan ){
+      available += bonusBinario;
     }
     
     available = available.toFixed(2);
@@ -328,6 +340,7 @@ export default class Oficina extends Component {
               <p className="description">Equipo Izquierdo ({this.state.personasIzquierda})</p>
               <h4 className="title"><a href="#services">Disponible {this.state.puntosEfectivosIzquierda} pts</a></h4>
               <p className="description">Reclamado {this.state.puntosReclamadosIzquierda} pts</p>
+              <p className="description">Perdidos {this.state.puntosLostIzquierda} pts</p>
               <hr />
               <p className="description">Total {this.state.puntosIzquierda} pts</p>
 
@@ -340,6 +353,7 @@ export default class Oficina extends Component {
               <p className="description">Equipo Derecho ({this.state.personasDerecha})</p>
               <h4 className="title"><a href="#services">Disponible {this.state.puntosEfectivosDerecha} pts</a></h4>
               <p className="description">Reclamado {this.state.puntosReclamadosDerecha} pts</p>
+              <p className="description">Perdidos {this.state.puntosLostDerecha} pts</p>
               <hr />
               <p className="description">Total {this.state.puntosDerecha} pts</p>
 

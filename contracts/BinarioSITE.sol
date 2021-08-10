@@ -348,12 +348,14 @@ contract SITEBinary is Ownable{
     require(_plan <= plans.length && _plan > 0, "plan incorrecto");
 
     Investor storage usuario = investors[msg.sender];
+    
     if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
       withdrawInternal();
       upGradePlan(_plan);
     }else{
 
       if (usuario.inicio == 0 || usuario.inicio.add(tiempo()) <= block.timestamp) {
+        withdrawInternal();
         uint256 _value = plans[_plan];
 
         require( USDT_Contract.allowance(msg.sender, address(this)) >= buyValue(_value), "aprovado insuficiente");
@@ -698,14 +700,7 @@ contract SITEBinary is Ownable{
       amount += saldo;
     }
 
-    if (saldo >= balanceRef) {
-      saldo -= balanceRef;
-      amount += balanceRef;
-    }else{
-      saldo = 0;
-      amount += saldo;
-    }
-
+    amount += balanceRef;
     amount += investor.almacen; 
 
     return (amount, left, rigth, gana, pierde);
@@ -755,12 +750,7 @@ contract SITEBinary is Ownable{
       
     }
 
-    if (usuario.amount > amount) {
-      usuario.amount -= amount;
-    }else{
-      usuario.amount = 0;
-    }
-    
+    usuario.amount -= amount.sub(usuario.balanceRef+usuario.almacen);
     usuario.almacen = amount;
     usuario.paidAt = block.timestamp;
     usuario.balanceRef = 0;
@@ -814,14 +804,9 @@ contract SITEBinary is Ownable{
       
     }
 
-    if (usuario.amount > amount) {
-      usuario.amount -= amount;
-    }else{
-      usuario.amount = 0;
-    }
-
-    usuario.paidAt = block.timestamp;
+    usuario.amount -= amount.sub(usuario.balanceRef+usuario.almacen);
     usuario.withdrawn += amount;
+    usuario.paidAt = block.timestamp;
     usuario.balanceRef = 0;
     usuario.almacen = 0;
 

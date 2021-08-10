@@ -35,7 +35,7 @@ export default class CrowdFunding extends Component {
   }
 
   handleChangeUSDT(event) {
-    console.log(event)
+    //console.log(event)
     this.setState({valueUSDT: event.value});
   }
 
