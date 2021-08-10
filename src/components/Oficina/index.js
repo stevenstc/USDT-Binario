@@ -18,6 +18,7 @@ export default class Oficina extends Component {
       invested: 0,
       paidAt: 0,
       my: 0,
+      almacen: 0,
       withdrawn: 0,
       precioSITE: 0,
       valueSITE: 0,
@@ -105,7 +106,7 @@ export default class Oficina extends Component {
   async Investors() {
 
     let direccion = await window.tronWeb.trx.getAccount();
-    let esto = await Utils.contract.investors(direccion.address).call();
+    let usuario = await Utils.contract.investors(direccion.address).call();
     let My = await Utils.contract.withdrawable(direccion.address).call();
     
     var tronUSDT = await window.tronWeb;
@@ -113,37 +114,45 @@ export default class Oficina extends Component {
     var contractUSDT = await tronUSDT.contract().at(direccioncontract); 
     var decimales = await contractUSDT.decimals().call();
 
-    var usuario = esto;
+    console.log(usuario);
+
     usuario.inicio = parseInt(usuario.inicio._hex)*1000;
+    usuario.amount = parseInt(usuario.amount._hex);
     usuario.invested = parseInt(usuario.invested);
     usuario.withdrawn = parseInt(usuario.withdrawn._hex);
     usuario.directos = parseInt(usuario.directos);
+    usuario.balanceRef = parseInt(usuario.balanceRef);
+    usuario.almacen = parseInt(usuario.almacen);
+    usuario.totalRef = parseInt(usuario.totalRef._hex);
+    usuario.paidAt = parseInt(usuario.paidAt._hex);
+    usuario.plan = parseInt(usuario.plan._hex);
 
-    //console.log(usuario);
-    
+    console.log(usuario);
+
     var tiempo = await Utils.contract.tiempo().call();
     tiempo = parseInt(tiempo._hex)*1000;
 
     var porcentiempo = ((Date.now()-usuario.inicio)*100)/tiempo;
 
-    let valorPlan = await Utils.contract.plans(usuario.plan._hex).call();
+    let valorPlan = await Utils.contract.plans(usuario.plan).call();
     let porcent = await Utils.contract.porcent().call();
     valorPlan = parseInt(valorPlan._hex)*parseInt(porcent._hex)/100;
 
-    var progresoUsdt = ((valorPlan-(usuario.invested*2-usuario.withdrawn))*100)/valorPlan;
+    var progresoUsdt = ((valorPlan-(usuario.invested-(usuario.withdrawn+usuario.balanceRef+usuario.almacen)))*100)/valorPlan;
 
     var fecha = new Date(usuario.inicio+tiempo);
     fecha = ""+fecha;
 
     this.setState({
       direccion: window.tronWeb.address.fromHex(direccion.address),
-      registered: esto.registered,
-      balanceRef: parseInt(esto.balanceRef._hex)/10**decimales,
-      totalRef: parseInt(esto.totalRef._hex)/10**decimales,
-      invested: parseInt(esto.invested)/10**decimales,
-      paidAt: parseInt(esto.paidAt._hex)/10**decimales,
+      registered: usuario.registered,
+      balanceRef: usuario.balanceRef/10**decimales,
+      totalRef: usuario.totalRef/10**decimales,
+      invested: usuario.invested/10**decimales,
+      paidAt: usuario.paidAt/10**decimales,
       my: parseInt(My.amount._hex)/10**decimales,
-      withdrawn: parseInt(esto.withdrawn)/10**decimales,
+      withdrawn: usuario.withdrawn/10**decimales,
+      almacen: usuario.almacen/10**decimales,
       porcentiempo: porcentiempo,
       progresoUsdt: progresoUsdt,
       valorPlan: valorPlan/10**decimales,
@@ -198,9 +207,12 @@ export default class Oficina extends Component {
   };
 
   async withdraw(){
-    const { balanceRef, my } = this.state;
+    const { balanceRef, my, almacen } = this.state;
 
-    var available = (balanceRef+my);
+    var available = (balanceRef+my+almacen);
+    if(this.state.directos >= 2){
+      available += this.state.bonusBinario;
+    }
     available = available.toFixed(8);
     available = parseFloat(available);
 
@@ -223,9 +235,9 @@ export default class Oficina extends Component {
 
 
   render() {
-    var { balanceRef, invested, my, direccion, link, link2} = this.state;
+    var { balanceRef, invested, my, direccion, link, link2, almacen} = this.state;
 
-    var available = balanceRef+my;
+    var available = balanceRef+my+almacen;
     if(this.state.directos >= 2){
       available += this.state.bonusBinario;
     }

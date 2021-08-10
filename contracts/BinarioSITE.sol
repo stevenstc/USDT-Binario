@@ -27,6 +27,7 @@ contract SITEBinary is Ownable{
     uint256 balanceRef;
     uint256 totalRef;
     uint256 amount;
+    uint256 almacen;
     uint256 inicio;
     uint256 invested;
     uint256 paidAt;
@@ -42,7 +43,9 @@ contract SITEBinary is Ownable{
 
   uint256 public rate = 1680000;
   uint256 public rate2 = 1680000;
-  uint256 public rateDescuento = 2;
+
+  uint256 public porcientoBuy = 100;
+  uint256 public porcientoPay = 100;
 
   uint256[5] public primervez = [100, 0, 0, 0, 0];
 
@@ -56,6 +59,7 @@ contract SITEBinary is Ownable{
   bool public sisBinario = true;
 
   uint256 public dias = 1;
+  uint256 public unidades = 86400;
   uint256 public maxTime = 90;
   uint256 public porcent = 200;
   uint256 public porcentPuntosBinario = 10;
@@ -74,7 +78,6 @@ contract SITEBinary is Ownable{
   uint256 public lastUserId = 2;
   address public api;
 
-
   constructor(address _tokenTRC20) {
     (USDT_Contract, SALIDA_Contract) = (TRC20_Interface(_tokenTRC20), TRC20_Interface(_tokenTRC20));
 
@@ -92,7 +95,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setRate(uint256 _rate) public {
+  function setRateBuy(uint256 _rate) public {
 
     require( owner == msg.sender || api == msg.sender, "No tienes autorizacion");
 
@@ -100,7 +103,7 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setRate2(uint256 _rate) public {
+  function setRateSell(uint256 _rate) public {
 
     require( owner == msg.sender || api == msg.sender, "No tienes autorizacion");
 
@@ -108,19 +111,12 @@ contract SITEBinary is Ownable{
 
   }
 
-  function setRateSellDescuento(uint256 _porcentaje) public onlyOwner returns(uint256){
-
-    rateDescuento = _porcentaje;
-
-    return _porcentaje; 
-  }
-
   function rateSell() public view returns(uint256){
 
-    if (tokenPricipal == tokenPago) {
-      return rate.sub(rate.mul(rateDescuento).div(100));
+    if (tokenPricipal == tokenPago || rate == rate2 ) {
+      return rate;
     } else {
-      return rate2.sub(rate2.mul(rateDescuento).div(100));
+      return rate2;
     }
 
   }
@@ -130,6 +126,14 @@ contract SITEBinary is Ownable{
     api = _wallet;
 
     return _wallet;
+
+  }
+
+  function setporcientoBuyPay(uint256 _buy ,uint256 _pay) public onlyOwner returns(uint256, uint256){
+
+    porcientoBuy = _buy;
+    porcientoPay = _pay;
+    return (_buy, _pay);
 
   }
 
@@ -193,7 +197,7 @@ contract SITEBinary is Ownable{
   }
   
   function tiempo() public view returns (uint256){
-     return dias.mul(86400);
+     return dias.mul(unidades);
   }
 
   function verPlan(uint256 _nivel) public view returns (uint256){
@@ -227,6 +231,14 @@ contract SITEBinary is Ownable{
     dias = _dias;
     
     return (_dias);
+
+  }
+
+  function setTiempoUnidades(uint256 _diasHorasSegundos) public onlyOwner returns(uint256){
+
+    unidades = _diasHorasSegundos;
+    
+    return (_diasHorasSegundos);
 
   }
 
@@ -301,17 +313,17 @@ contract SITEBinary is Ownable{
           b[i] = array[i];
           a[i] = amount.mul(b[i]).div(basePorcientos);
 
-          if (usuario.amount >= a[i].div(porcent.div(100))) {
-            usuario.amount -= a[i].div(porcent.div(100));
+          if (usuario.amount >= a[i]) {
+            usuario.amount -= a[i];
             usuario.balanceRef += a[i];
             usuario.totalRef += a[i];
             totalRefRewards += a[i];
             
           }else{
 
-            usuario.balanceRef += usuario.amount.mul(porcent.div(100));
-            usuario.totalRef += usuario.amount.mul(porcent.div(100));
-            totalRefRewards += usuario.amount.mul(porcent.div(100));
+            usuario.balanceRef += usuario.amount;
+            usuario.totalRef += usuario.amount;
+            totalRefRewards += usuario.amount;
             usuario.amount = 0;
           }
 
@@ -323,11 +335,11 @@ contract SITEBinary is Ownable{
   }
 
   function buyValue(uint256 _value ) view public returns (uint256){
-    return _value.mul(10**USDT_Contract.decimals()).div(rate);
+    return (_value.mul(10**USDT_Contract.decimals()).div(rate)).mul(porcientoBuy).div(100);
   }
 
   function payValue(uint256 _value ) view public returns (uint256){
-    return _value.mul(10**SALIDA_Contract.decimals()).div(rateSell());
+    return (_value.mul(10**SALIDA_Contract.decimals()).div(rateSell())).mul(porcientoPay).div(100);
   }
 
   function buyPlan(uint256 _plan, address _sponsor, uint256 _hand) public {
@@ -350,7 +362,7 @@ contract SITEBinary is Ownable{
         usuario.inicio = block.timestamp;
 
         usuario.invested += _value;
-        usuario.amount += _value;
+        usuario.amount += _value.mul(porcent.div(100));
         usuario.plan = _plan;
         
         if (!usuario.registered){
@@ -437,7 +449,7 @@ contract SITEBinary is Ownable{
     usuario.inicio = block.timestamp;
 
     usuario.plan = _plan;
-    usuario.amount += _value;
+    usuario.amount += _value.mul(porcent.div(100));
     usuario.invested += _value;
 
      if (padre[msg.sender] != address(0) && sisReferidos ){
@@ -497,7 +509,7 @@ contract SITEBinary is Ownable{
     rigth -= user_derecha.reclamados.add(user_derecha.lost);
 
     if (left < rigth) {
-      if (left.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
+      if (left.mul(porcentPuntosBinario).div(100) <= investor.amount ) {
         amount = left.mul(porcentPuntosBinario).div(100) ;
           
       }else{
@@ -506,7 +518,7 @@ contract SITEBinary is Ownable{
       }
       
     }else{
-      if (rigth.mul(porcentPuntosBinario).div(100) <= investor.amount.div(porcent.div(100))) {
+      if (rigth.mul(porcentPuntosBinario).div(100) <= investor.amount ) {
         amount = rigth.mul(porcentPuntosBinario).div(100) ;
           
       }else{
@@ -637,20 +649,23 @@ contract SITEBinary is Ownable{
     uint256 till = block.timestamp > finish ? finish : block.timestamp;
 
     if (since < till) {
-      amount += investor.amount * (till - since) * porcent / tiempo() / 100;
+      amount += investor.amount * (till - since) / tiempo() ;
     }
   }
 
-  function profit() internal view returns (uint256, uint256, uint256, bool) {
+  function profit() public view returns (uint256, uint256, uint256, bool, bool) {
     Investor storage investor = investors[msg.sender];
 
     uint256 amount;
     uint256 binary;
+    uint256 saldo = investor.amount;
+    uint256 balanceRef = investor.balanceRef;
     
     uint256 left;
     uint256 rigth;
 
     bool gana;
+    bool pierde;
     
     (left, rigth, binary) = withdrawableBinary(msg.sender);
 
@@ -666,28 +681,38 @@ contract SITEBinary is Ownable{
             
         }
         gana = true;
-        if (investor.amount >= binary.div(porcent.div(100))) {
+        if (saldo >= binary) {
+          saldo -= binary;
           amount += binary;
         }else{
-          amount += investor.amount;
+          saldo = 0;
+          amount += saldo;
         }
         
+      }else{
+        pierde = true;
       }
     }
 
-    if (investor.amount >= withdrawable(msg.sender).div(porcent.div(100))) {
+    if (saldo >= withdrawable(msg.sender)) {
+      saldo -= withdrawable(msg.sender);
       amount += withdrawable(msg.sender);
     }else{
-      amount += investor.amount;
+      saldo = 0;
+      amount += saldo;
     }
 
-    if (investor.amount >= investor.balanceRef.div(porcent.div(100))) {
-      amount += investor.balanceRef;
+    if (saldo >= balanceRef) {
+      saldo -= balanceRef;
+      amount += balanceRef;
     }else{
-      amount += investor.amount;
+      saldo = 0;
+      amount += saldo;
     }
 
-    return (amount, left, rigth, gana);
+    amount += investor.almacen; 
+
+    return (amount, left, rigth, gana, pierde);
 
   }
 
@@ -698,12 +723,9 @@ contract SITEBinary is Ownable{
     uint256 left;
     uint256 rigth;
     bool gana;
+    bool pierde;
     
-    (amount, left, rigth, gana) = profit();
-
-    require ( SALIDA_Contract.balanceOf(address(this)) >= payValue(amount), "The contract has no balance");
-    require ( amount >= MIN_RETIRO_interno, "The minimum withdrawal limit reached");
-    require ( SALIDA_Contract.transfer(msg.sender,payValue(amount)), "whitdrawl Fail" );
+    (amount, left, rigth, gana, pierde) = profit();
 
     if (gana) {
       Hand storage izquierda = handLeft[msg.sender];
@@ -719,7 +741,9 @@ contract SITEBinary is Ownable{
           
       }
       
-    } else {
+    } 
+
+    if (pierde) {
       Hand storage izquierda = handLeft[msg.sender];
       Hand storage derecha = handRigth[msg.sender];
 
@@ -728,8 +752,14 @@ contract SITEBinary is Ownable{
       
     }
 
+    if (usuario.amount > amount) {
+      usuario.amount -= amount;
+    }else{
+      usuario.amount = 0;
+    }
+    
+    usuario.almacen = amount;
     usuario.paidAt = block.timestamp;
-    usuario.withdrawn += amount;
     usuario.balanceRef = 0;
 
   }
@@ -741,12 +771,13 @@ contract SITEBinary is Ownable{
     uint256 left;
     uint256 rigth;
     bool gana;
+    bool pierde;
     
-    (amount, left, rigth, gana) = profit();
+    (amount, left, rigth, gana, pierde) = profit();
 
     require ( SALIDA_Contract.balanceOf(address(this)) >= payValue(amount), "The contract has no balance");
     require ( amount >= MIN_RETIRO, "The minimum withdrawal limit reached");
-    require ( SALIDA_Contract.transfer(msg.sender,payValue(amount)), "whitdrawl Fail" );
+    require ( SALIDA_Contract.transfer(msg.sender, payValue(amount)), "whitdrawl Fail" );
 
     if (gana) {
       Hand storage izquierda = handLeft[msg.sender];
@@ -762,7 +793,9 @@ contract SITEBinary is Ownable{
           
       }
       
-    } else {
+    } 
+
+    if (pierde) {
       Hand storage izquierda = handLeft[msg.sender];
       Hand storage derecha = handRigth[msg.sender];
 
@@ -771,9 +804,16 @@ contract SITEBinary is Ownable{
       
     }
 
+    if (usuario.amount > amount) {
+      usuario.amount -= amount;
+    }else{
+      usuario.amount = 0;
+    }
+
     usuario.paidAt = block.timestamp;
     usuario.withdrawn += amount;
     usuario.balanceRef = 0;
+    usuario.almacen = 0;
 
   }
 
