@@ -650,6 +650,8 @@ contract SITEBinary is Ownable{
 
     if (since < till) {
       amount += investor.amount * (till - since) / tiempo() ;
+    }else{
+      amount += investor.amount;
     }
   }
 
