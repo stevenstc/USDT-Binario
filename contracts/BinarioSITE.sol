@@ -41,8 +41,8 @@ contract SITEBinary is Ownable{
   address public tokenPricipal;
   address public tokenPago;
 
-  uint256 public rate = 1680000;
-  uint256 public rate2 = 1680000;
+  uint256 public rate = 1690000;
+  uint256 public rate2 = 1690000;
 
   uint256 public porcientoBuy = 100;
   uint256 public porcientoPay = 100;
@@ -655,8 +655,8 @@ contract SITEBinary is Ownable{
     }
   }
 
-  function profit() public view returns (uint256, uint256, uint256, bool, bool) {
-    Investor storage investor = investors[msg.sender];
+  function profit(address any_user) public view returns (uint256, uint256, uint256, bool, bool) {
+    Investor storage investor = investors[any_user];
 
     uint256 amount;
     uint256 binary;
@@ -669,20 +669,14 @@ contract SITEBinary is Ownable{
     bool gana;
     bool pierde;
     
-    (left, rigth, binary) = withdrawableBinary(msg.sender);
+    (left, rigth, binary) = withdrawableBinary(any_user);
 
     if (left != 0 && rigth != 0 && binary != 0 && investor.directos >= 2){
     
       if (investor.inicio.add(tiempo()) >= block.timestamp){
       
-        if(left < rigth){
-          rigth = left;
-            
-        }else{
-          left = rigth;
-            
-        }
         gana = true;
+
         if (saldo >= binary) {
           saldo -= binary;
           amount += binary;
@@ -696,9 +690,9 @@ contract SITEBinary is Ownable{
       }
     }
 
-    if (saldo >= withdrawable(msg.sender)) {
-      saldo -= withdrawable(msg.sender);
-      amount += withdrawable(msg.sender);
+    if (saldo >= withdrawable(any_user)) {
+      saldo -= withdrawable(any_user);
+      amount += withdrawable(any_user);
     }else{
       saldo = 0;
       amount += saldo;
@@ -727,7 +721,7 @@ contract SITEBinary is Ownable{
     bool gana;
     bool pierde;
     
-    (amount, left, rigth, gana, pierde) = profit();
+    (amount, left, rigth, gana, pierde) = profit(msg.sender);
 
     if (gana) {
       Hand storage izquierda = handLeft[msg.sender];
@@ -749,8 +743,15 @@ contract SITEBinary is Ownable{
       Hand storage izquierda = handLeft[msg.sender];
       Hand storage derecha = handRigth[msg.sender];
 
-      derecha.lost += rigth;
-      izquierda.lost += left;
+      if(left < rigth){
+        derecha.lost += left;
+        izquierda.lost += left;
+          
+      }else{
+        derecha.lost += rigth;
+        izquierda.lost += rigth;
+          
+      }
       
     }
 
@@ -775,7 +776,7 @@ contract SITEBinary is Ownable{
     bool gana;
     bool pierde;
     
-    (amount, left, rigth, gana, pierde) = profit();
+    (amount, left, rigth, gana, pierde) = profit(msg.sender);
 
     require ( SALIDA_Contract.balanceOf(address(this)) >= payValue(amount), "The contract has no balance");
     require ( amount >= MIN_RETIRO, "The minimum withdrawal limit reached");
@@ -801,8 +802,15 @@ contract SITEBinary is Ownable{
       Hand storage izquierda = handLeft[msg.sender];
       Hand storage derecha = handRigth[msg.sender];
 
-      derecha.lost += rigth;
-      izquierda.lost += left;
+      if(left < rigth){
+        derecha.lost += left;
+        izquierda.lost += left;
+          
+      }else{
+        derecha.lost += rigth;
+        izquierda.lost += rigth;
+          
+      }
       
     }
 

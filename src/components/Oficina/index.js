@@ -107,7 +107,7 @@ export default class Oficina extends Component {
 
     let direccion = await window.tronWeb.trx.getAccount();
     let usuario = await Utils.contract.investors(direccion.address).call();
-    let My = await Utils.contract.withdrawable(direccion.address).call();
+    usuario.withdrawable = await Utils.contract.withdrawable(direccion.address).call();
     
     var tronUSDT = await window.tronWeb;
     var direccioncontract = await Utils.contract.tokenPricipal().call();
@@ -126,6 +126,7 @@ export default class Oficina extends Component {
     usuario.totalRef = parseInt(usuario.totalRef._hex);
     usuario.paidAt = parseInt(usuario.paidAt._hex);
     usuario.plan = parseInt(usuario.plan._hex);
+    usuario.withdrawable = parseInt(usuario.withdrawable.amount._hex);
 
     console.log(usuario);
 
@@ -134,11 +135,13 @@ export default class Oficina extends Component {
 
     var porcentiempo = ((Date.now()-usuario.inicio)*100)/tiempo;
 
-    let valorPlan = await Utils.contract.plans(usuario.plan).call();
     let porcent = await Utils.contract.porcent().call();
-    valorPlan = parseInt(valorPlan._hex)*parseInt(porcent._hex)/100;
+    porcent = parseInt(porcent._hex)/100;
+    var valorPlan = usuario.invested*porcent;
 
-    var progresoUsdt = ((valorPlan-(usuario.invested-(usuario.withdrawn+usuario.balanceRef+usuario.almacen)))*100)/valorPlan;
+    var progresoUsdt = ((valorPlan-(usuario.invested*porcent-(usuario.withdrawn+usuario.withdrawable+usuario.balanceRef+usuario.almacen)))*100)/valorPlan;
+
+    var progresoRetiro = ((valorPlan-(usuario.invested*porcent-usuario.withdrawn))*100)/valorPlan;
 
     var fecha = new Date(usuario.inicio+tiempo);
     fecha = ""+fecha;
@@ -150,11 +153,12 @@ export default class Oficina extends Component {
       totalRef: usuario.totalRef/10**decimales,
       invested: usuario.invested/10**decimales,
       paidAt: usuario.paidAt/10**decimales,
-      my: parseInt(My.amount._hex)/10**decimales,
+      my: usuario.withdrawable/10**decimales,
       withdrawn: usuario.withdrawn/10**decimales,
       almacen: usuario.almacen/10**decimales,
       porcentiempo: porcentiempo,
       progresoUsdt: progresoUsdt,
+      progresoRetiro: progresoRetiro,
       valorPlan: valorPlan/10**decimales,
       fecha: fecha,
       directos: usuario.directos
@@ -202,6 +206,9 @@ export default class Oficina extends Component {
 
       puntosReclamadosIzquierda: parseInt(brazoIzquierdo.reclamados._hex)/10**8,
       puntosReclamadosDerecha: parseInt(brazoDerecho.reclamados._hex)/10**8,
+
+      puntosLostIzquierda: parseInt(brazoIzquierdo.lost._hex)/10**8,
+      puntosLostDerecha: parseInt(brazoDerecho.lost._hex)/10**8,
     });
 
   };
@@ -280,7 +287,7 @@ export default class Oficina extends Component {
                 </div>
     
                 <div className="progress" style={{"height": "20px"}}>
-                  <div className="progress-bar bg-warning " role="progressbar" style={{"width": this.state.progresoUsdt+"%"}} aria-valuenow={this.state.progresoUsdt} aria-valuemin="0" aria-valuemax="100"></div>
+                  <div className="progress-bar bg-warning " role="progressbar" style={{"width": this.state.progresoRetiro+"%"}} aria-valuenow={this.state.progresoRetiro} aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 Reclamados <b>{(this.state.withdrawn).toFixed(2)} USDT</b>
 
