@@ -1,20 +1,19 @@
 {
   "files": {
-    "main.js": "/BINARIO-SITE/static/js/main.cca2033f.chunk.js",
-    "main.js.map": "/BINARIO-SITE/static/js/main.cca2033f.chunk.js.map",
-    "runtime-main.js": "/BINARIO-SITE/static/js/runtime-main.11ff97c4.js",
-    "runtime-main.js.map": "/BINARIO-SITE/static/js/runtime-main.11ff97c4.js.map",
-    "static/js/2.4cf60076.chunk.js": "/BINARIO-SITE/static/js/2.4cf60076.chunk.js",
-    "static/js/2.4cf60076.chunk.js.map": "/BINARIO-SITE/static/js/2.4cf60076.chunk.js.map",
-    "index.html": "/BINARIO-SITE/index.html",
-    "precache-manifest.d9d7a0fe3a11986c46186cf313db4a32.js": "/BINARIO-SITE/precache-manifest.d9d7a0fe3a11986c46186cf313db4a32.js",
-    "service-worker.js": "/BINARIO-SITE/service-worker.js",
-    "static/js/2.4cf60076.chunk.js.LICENSE.txt": "/BINARIO-SITE/static/js/2.4cf60076.chunk.js.LICENSE.txt",
-    "static/media/TronLinkLogo.png": "/BINARIO-SITE/static/media/TronLinkLogo.d3a8f115.png"
+    "main.js": "/static/js/main.6314bd89.chunk.js",
+    "main.js.map": "/static/js/main.6314bd89.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.746353a0.js",
+    "runtime-main.js.map": "/static/js/runtime-main.746353a0.js.map",
+    "static/js/2.0a6094db.chunk.js": "/static/js/2.0a6094db.chunk.js",
+    "static/js/2.0a6094db.chunk.js.map": "/static/js/2.0a6094db.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.870195a520e8e90aa78c05cecafad6fd.js": "/precache-manifest.870195a520e8e90aa78c05cecafad6fd.js",
+    "service-worker.js": "/service-worker.js",
+    "static/js/2.0a6094db.chunk.js.LICENSE.txt": "/static/js/2.0a6094db.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.11ff97c4.js",
-    "static/js/2.4cf60076.chunk.js",
-    "static/js/main.cca2033f.chunk.js"
+    "static/js/runtime-main.746353a0.js",
+    "static/js/2.0a6094db.chunk.js",
+    "static/js/main.6314bd89.chunk.js"
   ]
 }
