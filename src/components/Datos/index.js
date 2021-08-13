@@ -27,9 +27,16 @@ export default class Datos extends Component {
   async rateSITE(){
     var proxyUrl = cons.proxy;
     var apiUrl = cons.PRE;
-    var response = await fetch(proxyUrl+apiUrl)
-    .catch(error =>{console.error(error)})
-    const json = await response.json();
+    var response;
+
+    try {
+      response = await fetch(proxyUrl+apiUrl);
+    } catch (err) {
+      console.log(err);
+      return this.state.precioSITE;
+    }
+
+    var json = await response.json();
 
     this.setState({
       precioSITE: json.Data.precio
@@ -50,7 +57,7 @@ export default class Datos extends Component {
     var decimales = await contractUSDT.decimals().call();
     //console.log(esto);
     this.setState({
-      totalInvestors: parseInt(esto.Investors._hex)+31,
+      totalInvestors: parseInt(esto.Investors._hex),
       totalInvested: parseInt(esto.Invested._hex)/10**decimales,
       totalRefRewards: parseInt(esto.RefRewards._hex)/10**decimales
 

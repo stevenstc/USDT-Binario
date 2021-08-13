@@ -36,8 +36,6 @@
   <!-- Main Stylesheet File -->
   <link href="css/style.css" rel="stylesheet">
 
-  <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.5/mobile-detect.min.js"></script>
-
   <!-- =======================================================
     Theme Name: NewBiz
     Theme URL: https://bootstrapmade.com/newbiz-bootstrap-business-template/
@@ -64,7 +62,7 @@
           <a class="ml-2" href="https://tronscan.io/#/token20/TDDkSxfkN5DbqXK3tHSZFXRMcT9aS6m9qz">
             <span>SMART CAPITAL </span>
           </a> <br />
-          &nbsp;&nbsp;<span id="p1" style='font-family: montserrat,sans-serif;color: #004289;font-size: 11px;'>Cargando...</span></p>
+          &nbsp;&nbsp;<span id="p1" style='font-family: montserrat,sans-serif;color: #004289;font-size: 16px;'>Cargando...</span></p>
 
       </div>
 
@@ -93,7 +91,7 @@
               Contratos
             </a>
             <div class="dropdown-menu">
-              <a class="dropdown-item" href="#root">Contrato V1.0</a>
+              <a class="dropdown-item" href="/">Contrato V1.0</a>
             </div>
           </li>
           <li><a href="#services"><i class="fa fa-user mr-2" aria-hidden="true"></i>Oficina</a></li>
@@ -223,6 +221,20 @@
 
           </div>
 
+          <div class="col-lg-4 col-md-12 footer-links">
+            <h4>Mercado</h4>
+            <ul>
+              <li>
+                <a href="https://justswap.io/?lang=en-US?tokenAddress=TDDkSxfkN5DbqXK3tHSZFXRMcT9aS6m9qz&type=swap#/scan/detail/trx/TDDkSxfkN5DbqXK3tHSZFXRMcT9aS6m9qz">
+                  <span id="p2" style='font-family: montserrat,sans-serif;font-size: 16px;'>
+                    Cargando...
+                  </span>
+                </a>
+              </li>
+            </ul>
+
+          </div>
+
 
         </div>
       </div>
@@ -270,6 +282,24 @@
         }).then(data => {
         // Work with JSON data
         var price = data.Data.precio;
+
+        document.getElementById("p1").innerHTML = "<strong>$</strong>"+price.toFixed(4)+" USDT" ;
+        }).catch(err => {
+            console.log(err);
+            document.getElementById("p1").innerHTML = "Cargando...";
+        
+        });
+    }
+
+    
+    function consulta2(){
+        var proxyUrl = 'https://proxy-sites.herokuapp.com/';
+        var apiUrl = 'https://precio-site.herokuapp.com/api/v1/servicio/precio/v3/SITE';
+        fetch(proxyUrl+apiUrl).then(response => {
+        return response.json();
+        }).then(data => {
+        // Work with JSON data
+        var price = data.Data.precio;
         var porcetn = data.Data.var;
 
         if (porcetn <= 0) {
@@ -280,19 +310,20 @@
           var color = "color:green";
           var signo = " +";
         }
-        //console.log(price);
 
-        document.getElementById("p1").innerHTML = "<strong>$</strong>"+price.toFixed(4)+" USDT <span style='"+color+"'>"+signo+porcetn.toFixed(2)+"% </span>" ;
+        document.getElementById("p2").innerHTML = "<strong>1 SITE = "+price.toFixed(4)+" TRX <span style='"+color+"'>"+signo+porcetn.toFixed(2)+"% </span> </strong>" ;
         }).catch(err => {
             console.log(err);
-            document.getElementById("p1").innerHTML = "Cargando...";
+            document.getElementById("p2").innerHTML = "Cargando...";
         
         });
     }
 
     consulta();
+    consulta2();
 
     setInterval(() => consulta(),30*1000);
+    setInterval(() => consulta2(),30*1000);
     
 
   </script>

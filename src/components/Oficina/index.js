@@ -68,9 +68,20 @@ export default class Oficina extends Component {
   async rateSITE(){
     var proxyUrl = cons.proxy;
     var apiUrl = cons.PRE;
-    const response = await fetch(proxyUrl+apiUrl)
-    .catch(error =>{console.error(error)})
-    const json = await response.json();
+    var response;
+
+    try {
+      response = await fetch(proxyUrl+apiUrl);
+    } catch (err) {
+      console.log(err);
+      return this.state.precioSITE;
+    }
+
+    var json = await response.json();
+
+    this.setState({
+      precioSITE: json.Data.precio
+    });
 
     return json.Data.precio;
 
@@ -92,9 +103,11 @@ export default class Oficina extends Component {
       mydireccion = window.tronWeb.address.fromHex(mydireccion.address)
       mydireccion = await Utils.contract.addressToId(mydireccion).call();
       mydireccion = loc+'?ref='+mydireccion;
+      var link = mydireccion+"&hand=izq";
+      var link2 = mydireccion+"&hand=der";
       this.setState({
-        link: mydireccion+"&hand=izq",
-        link2: mydireccion+"&hand=der",
+        link: link,
+        link2: link2,
       });
     }else{
       this.setState({
@@ -362,7 +375,7 @@ export default class Oficina extends Component {
 
           <div className="col-md-6 col-lg-5 offset-lg-1 wow bounceInUp" data-wow-duration="1s">
             <div className="box">
-              <div className="icon"><i className="ion-ios-analytics-outline" style={{color: '#ff689b'}}></i></div>
+              <div className="icon"><i className="ion-ios-speedometer-outline" style={{color: '#ff689b'}}></i></div>
               
               <h4 className="title"><a href="#services">Disponible {available} USDT</a></h4>
                 

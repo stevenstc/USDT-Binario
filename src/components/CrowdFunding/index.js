@@ -49,20 +49,20 @@ export default class CrowdFunding extends Component {
   async rateSITE(){
     var proxyUrl = cons.proxy;
     var apiUrl = cons.PRE;
-    var response = await fetch(proxyUrl+apiUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Headers':'origin,x-requested-with'
-      }
-    })
-    .catch(error =>{console.error(error)})
-    const json = await response.json();
+    var response;
+
+    try {
+      response = await fetch(proxyUrl+apiUrl);
+    } catch (err) {
+      console.log(err);
+      return this.state.precioSITE;
+    }
+
+    var json = await response.json();
 
     this.setState({
       precioSITE: json.Data.precio
     });
-
 
     return json.Data.precio;
 
@@ -107,12 +107,16 @@ export default class CrowdFunding extends Component {
     if (aprovado > 0) {
 
       for (let index = inversors.plan; index < 9; index++) {
-        var precio = await Utils.contract.verPlan(index).call();
+        var precio = await Utils.contract.plans(index).call();
         precio = parseInt(precio)/10**8;
-        datos = {};
-        datos.value = index;
-        datos.label = precio+' USDT';
-        options[index] = datos;
+        if( precio > 0 ){
+          datos = {};
+          datos.value = index;
+          datos.label = precio+' USDT';
+          options[index] = datos;
+
+        }
+        
         
       }
     }
@@ -155,22 +159,39 @@ export default class CrowdFunding extends Component {
     //console.log(aprovado);
 
     if (aprovado > 0) {
-      aprovado = "Depositar";
+      aprovado = "Comprar Plan";
     }else{
-      aprovado = "Registrar";
+      aprovado = "Conectar Wallet";
     }
+
+    inversors.inicio = parseInt(inversors.inicio._hex)*1000;
+    
+    var tiempo = await Utils.contract.tiempo().call();
+    tiempo = parseInt(tiempo._hex)*1000;
+
+    var porcentiempo = ((Date.now()-inversors.inicio)*100)/tiempo;
 
     var decimales = await contractSITE.decimals().call();
 
     var balance = await contractSITE.balanceOf(accountAddress).call();
     balance = parseInt(balance._hex)/10**decimales;
 
+    var valorPlan = 0;
+
+    if( porcentiempo < 100 ){
+      aprovado = "Upgrade Plan";
+
+      valorPlan = await Utils.contract.plans(inversors.plan).call();
+      valorPlan = parseInt(valorPlan._hex)/10**8;
+      
+    }
+
     var partner = cons.WS;
 
     var hand = "izquierdo ";
 
     if ( inversors.registered ) {
-      partner = window.tronWeb.address.fromHex(inversors.sponsor);
+      partner = window.tronWeb.address.fromHex(await Utils.contract.padre(accountAddress).call());
     }else{
 
       var loc = document.location.href;
@@ -231,17 +252,20 @@ export default class CrowdFunding extends Component {
     var balanceTRX = await window.tronWeb.trx.getBalance();
     balanceTRX = balanceTRX/10**6;
 
-    var direccioncontract2 = await Utils.contract.tokenPago().call();
+    //var direccioncontract2 = await Utils.contract.tokenPago().call();  
+    var direccioncontract2 = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";// USDT contrato o secundario
+
     var contractUSDT = await window.tronWeb.contract().at(direccioncontract2);
     var nameToken2 = await contractUSDT.symbol().call();
+    var decimals = await contractUSDT.decimals().call();
 
     var balanceUSDT = await contractUSDT.balanceOf(accountAddress).call();
 
-    balanceUSDT = parseInt(balanceUSDT)/10**6;
+    balanceUSDT = parseInt(balanceUSDT)/10**decimals;
 
     this.setState({
       deposito: aprovado,
-      balance: balance,
+      balance: valorPlan,
       decimales: decimales,
       accountAddress: accountAddress,
       porcentaje: porcentaje,
@@ -258,7 +282,7 @@ export default class CrowdFunding extends Component {
 
   async deposit() {
 
-    var { balanceSite, balanceTRX, valueUSDT } = this.state;
+    var { balanceSite, balanceTRX, valueUSDT , balance} = this.state;
 
     var accountAddress =  await window.tronWeb.trx.getAccount();
     accountAddress = window.tronWeb.address.fromHex(accountAddress.address);
@@ -277,6 +301,7 @@ export default class CrowdFunding extends Component {
 
     var amount = await Utils.contract.plans(valueUSDT).call();
     amount = parseInt(amount._hex)/10**8;
+    amount = amount-balance;
     amount = amount/this.state.precioSITE;
 
     if ( aprovado > 0 && 
@@ -331,11 +356,17 @@ export default class CrowdFunding extends Component {
           
         }
 
+        if(sponsor !== "T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb"){
           await Utils.contract.buyPlan(valueUSDT, sponsor, hand).send();
 
           window.alert("Felicidades inversión exitosa");
 
-          document.getElementById("services").scrollIntoView({block: "end", behavior: "smooth"});
+          document.getElementById("services").scrollIntoView({block: "start", behavior: "smooth"});
+
+        }else{
+          window.alert("Por favor usa link de referido para comprar un plan");
+        }
+          
         
 
 
@@ -344,7 +375,7 @@ export default class CrowdFunding extends Component {
 
       if ( balanceSite < amount ) {
 
-        window.alert("No tienes suficiente SITE");
+        window.alert("No tienes suficiente saldo, necesitas: "+amount+" SITE y en tu wallet tienes: "+balanceSite);
       }
 
       if (balanceTRX < 50) {
@@ -390,7 +421,7 @@ export default class CrowdFunding extends Component {
           </p>
           <p className="card-text ">
         
-            {this.state.nameToken1}: <strong>{this.state.balance}</strong> (${(this.state.balance*this.state.precioSITE).toFixed(2)})<br />
+            {this.state.nameToken1}: <strong>{this.state.balanceSite}</strong> (${(this.state.balanceSite*this.state.precioSITE).toFixed(2)})<br />
             TRX: <strong>{(this.state.balanceTRX*1).toFixed(6)}</strong><br />
             {this.state.nameToken2}: <strong>{(this.state.balanceUSDT*1).toFixed(6)}</strong><br />
           </p>
