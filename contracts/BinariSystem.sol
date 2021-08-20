@@ -431,120 +431,122 @@ contract BinarySystem is Ownable{
     require(plans[_plan] > 0, "plan desactivado");
 
     Investor storage usuario = investors[msg.sender];
-    
-    if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
-      revert();
-    }else{
 
-      if (usuario.inicio == 0 || usuario.inicio.add(tiempo()) <= block.timestamp || usuario.amount == 0) {
+    if (usuario.inicio == 0 || usuario.inicio.add(tiempo()) <= block.timestamp || usuario.amount == 0) {
 
-        uint256 _value = plans[_plan];
+      uint256 _value = plans[_plan];
 
-        require( USDT_Contract.allowance(msg.sender, address(this)) >= buyValue(_value), "aprovado insuficiente");
-        require( USDT_Contract.transferFrom(msg.sender, address(this), buyValue(_value)), "saldo insuficiente" );
+      require( USDT_Contract.allowance(msg.sender, address(this)) >= buyValue(_value), "aprovado insuficiente");
+      require( USDT_Contract.transferFrom(msg.sender, address(this), buyValue(_value)), "saldo insuficiente" );
 
-        usuario.inicio = block.timestamp;
+      usuario.inicio = block.timestamp;
 
-        usuario.invested += _value;
-        usuario.amount += _value.mul(porcent.div(100));
-        usuario.plan = _plan;
-        usuario.pasivo = true;
-        
-        if (!usuario.registered){
+      usuario.invested += _value;
+      usuario.amount += _value.mul(porcent.div(100));
+      usuario.plan = _plan;
+      usuario.pasivo = true;
+      
+      if (!usuario.registered){
 
-          (usuario.registered, usuario.recompensa) = (true, true);
-          padre[msg.sender] = _sponsor;
+        (usuario.registered, usuario.recompensa) = (true, true);
+        padre[msg.sender] = _sponsor;
 
-          if (_sponsor != address(0) && sisBinario ){
-            Investor storage sponsor = investors[_sponsor];
-            sponsor.directos++;
-            Hand storage hands = sponsor.hands;
-            if ( _hand == 0 ) {
-                
-              if (hands.referer[0] == address(0) ) {
-
-                hands.referer[0] = msg.sender;
-                
-              } else {
-
-                address[] memory network;
-
-                network = actualizarNetwork(network);
-                network[0] = hands.referer[0];
-                sponsor = investors[insertionLeft(network)];
-                hands = sponsor.hands;
-                hands.referer[0] = msg.sender;
-                
-              }
-            }else{
-
-              if ( hands.referer[1] == address(0) ) {
-
-                hands.referer[1] = msg.sender;
-                
-              } else {
-
-                address[] memory network;
-                network = actualizarNetwork(network);
-                network[0] = hands.referer[1];
-
-                sponsor = investors[insertionRigth(network)];
-                hands = sponsor.hands;
-                hands.referer[1] = msg.sender;
-                
+        if (_sponsor != address(0) && sisBinario ){
+          Investor storage sponsor = investors[_sponsor];
+          sponsor.directos++;
+          Hand storage hands = sponsor.hands;
+          if ( _hand == 0 ) {
               
-              }
+            if (hands.referer[0] == address(0) ) {
+
+              hands.referer[0] = msg.sender;
+              
+            } else {
+
+              address[] memory network;
+
+              network = actualizarNetwork(network);
+              network[0] = hands.referer[0];
+              sponsor = investors[insertionLeft(network)];
+              hands = sponsor.hands;
+              hands.referer[0] = msg.sender;
+              
             }
+          }else{
+
+            if ( hands.referer[1] == address(0) ) {
+
+              hands.referer[1] = msg.sender;
+              
+            } else {
+
+              address[] memory network;
+              network = actualizarNetwork(network);
+              network[0] = hands.referer[1];
+
+              sponsor = investors[insertionRigth(network)];
+              hands = sponsor.hands;
+              hands.referer[1] = msg.sender;
+              
             
-          }
-
-          if (padre[msg.sender] != address(0) && sisReferidos ){
-            rewardReferers(msg.sender, _value, primervez);
+            }
           }
           
-          totalInvestors++;
-
-          idToAddress[lastUserId] = msg.sender;
-          addressToId[msg.sender] = lastUserId;
-          
-          lastUserId++;
-
-        }else{
-
-          if (padre[msg.sender] != address(0) && sisReferidos ){
-            rewardReferers(msg.sender, _value, porcientos);
-          }
         }
 
-        totalInvested += _value;
+        if (padre[msg.sender] != address(0) && sisReferidos ){
+          rewardReferers(msg.sender, _value, primervez);
+        }
         
-      } else {
-        revert();
+        totalInvestors++;
+
+        idToAddress[lastUserId] = msg.sender;
+        addressToId[msg.sender] = lastUserId;
+        
+        lastUserId++;
+
+      }else{
+
+        if (padre[msg.sender] != address(0) && sisReferidos ){
+          rewardReferers(msg.sender, _value, porcientos);
+        }
       }
+
+      totalInvested += _value;
+      
+    } else {
+      revert();
     }
+    
   }
   
   function upGradePlan(uint256 _plan) public {
 
     Investor storage usuario = investors[msg.sender];
-    require (_plan > usuario.plan, "tiene que ser un plan mayor para hacer upgrade");
 
-    uint256 _value = plans[_plan].sub(plans[usuario.plan]);
+    if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
+      
+      require (_plan > usuario.plan, "tiene que ser un plan mayor para hacer upgrade");
 
-    require( USDT_Contract.allowance(msg.sender, address(this)) >= buyValue(_value), "aprovado insuficiente");
-    require( USDT_Contract.transferFrom(msg.sender, address(this), buyValue(_value)), "saldo insuficiente" );
-    
-    usuario.inicio = block.timestamp;
+      uint256 _value = plans[_plan].sub(plans[usuario.plan]);
 
-    usuario.plan = _plan;
-    usuario.amount += _value.mul(porcent.div(100));
-    usuario.invested += _value;
+      require( USDT_Contract.allowance(msg.sender, address(this)) >= buyValue(_value), "aprovado insuficiente");
+      require( USDT_Contract.transferFrom(msg.sender, address(this), buyValue(_value)), "saldo insuficiente" );
+      
+      usuario.inicio = block.timestamp;
 
-     if (padre[msg.sender] != address(0) && sisReferidos ){
-       rewardReferers(msg.sender, _value, porcientos);
-     }
+      usuario.plan = _plan;
+      usuario.amount += _value.mul(porcent.div(100));
+      usuario.invested += _value;
 
-    totalInvested += _value;
+      if (padre[msg.sender] != address(0) && sisReferidos ){
+        rewardReferers(msg.sender, _value, porcientos);
+      }
+
+      totalInvested += _value;
+    }else{
+      revert();
+    }
     
   }
   
