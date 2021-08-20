@@ -15,15 +15,17 @@ contract BinarySystem is Ownable{
   TRC20_Interface OTRO_Contract;
 
   struct Hand {
-    uint256 reclamados;
-    uint256 lost;
-    address referer;
+    uint256[] reclamados;
+    uint256[] lost;
+    uint256[] extra;
+    address[] referer;
   }
 
   struct Investor {
     bool registered;
     bool recompensa;
     bool pasivo;
+    Hand hands;
     uint256 plan;
     uint256 balanceRef;
     uint256 totalRef;
@@ -42,8 +44,8 @@ contract BinarySystem is Ownable{
   address public tokenPricipal;
   address public tokenPago;
 
-  uint256 public rate = 1690000;
-  uint256 public rate2 = 1690000;
+  uint256 public rate = 100000000;
+  uint256 public rate2 = 100000000;
 
   uint256 public porcientoBuy = 100;
   uint256 public porcientoPay = 100;
@@ -71,8 +73,6 @@ contract BinarySystem is Ownable{
 
   mapping (address => Investor) public investors;
   mapping (address => address) public padre;
-  mapping (address => Hand) public handLeft;
-  mapping (address => Hand) public handRigth;
   mapping(uint256 => address) public idToAddress;
   mapping(address => uint256) public addressToId;
   
@@ -317,6 +317,19 @@ contract BinarySystem is Ownable{
     return (_value.mul(10**SALIDA_Contract.decimals()).div(rateSell())).mul(porcientoPay).div(100);
   }
 
+  function asignarPuntosBinarios(address _user ,uint256 _puntosLeft, uint256 _puntosRigth) public onlyOwner returns (bool){
+
+    Investor storage usuario = investors[_user];
+    Hand storage hands = usuario.hands;
+
+    hands.extra[0] += _puntosLeft;
+    hands.extra[1] += _puntosRigth;
+
+    return true;
+    
+
+  }
+
   function asignarPlan(address _user ,uint256 _plan, address _sponsor, uint256 _hand) public onlyOwner returns (bool){
     require( _hand <= 1, "mano incorrecta");
     require(_plan <= plans.length && _plan > 0, "plan incorrecto");
@@ -340,13 +353,12 @@ contract BinarySystem is Ownable{
       if (_sponsor != address(0) && sisBinario ){
         Investor storage sponsor = investors[_sponsor];
         sponsor.directos++;
-        Hand storage izquierda = handLeft[_sponsor];
-        Hand storage derecha = handRigth[_sponsor];
+        Hand storage hands = sponsor.hands;
         if ( _hand == 0 ) {
             
-          if (izquierda.referer == address(0) ) {
+          if (hands.referer[0] == address(0) ) {
 
-            izquierda.referer = _user;
+            hands.referer[0] = _user;
             
           } else {
 
@@ -354,20 +366,21 @@ contract BinarySystem is Ownable{
 
             network = actualizarNetwork(network);
 
-            network[0] = izquierda.referer;
+            network[0] = hands.referer[0];
 
             _sponsor = insertionLeft(network);
-              
-            izquierda = handLeft[_sponsor];
-            izquierda.referer = _user;
+
+            sponsor = investors[_sponsor];
+            hands = sponsor.hands;
+            hands.referer[0] = _user;
             
             
           }
         }else{
 
-          if ( derecha.referer == address(0) ) {
+          if ( hands.referer[1] == address(0) ) {
 
-            derecha.referer = _user;
+            hands.referer[1] = _user;
             
           } else {
 
@@ -375,12 +388,11 @@ contract BinarySystem is Ownable{
 
             network = actualizarNetwork(network);
 
-            network[0] = derecha.referer;
+            network[0] = hands.referer[1];
 
-            _sponsor = insertionRigth(network);
-              
-            derecha = handRigth[_sponsor];
-            derecha.referer = _user;
+            sponsor = investors[insertionRigth(network)];
+            hands = sponsor.hands;
+            hands.referer[1] = _user;
             
           
         }
@@ -421,12 +433,11 @@ contract BinarySystem is Ownable{
     Investor storage usuario = investors[msg.sender];
     
     if( usuario.inicio != 0 && usuario.inicio.add(tiempo().mul(maxTime).div(100)) >= block.timestamp){
-      withdrawInternal();
-      upGradePlan(_plan);
+      revert();
     }else{
 
-      if (usuario.inicio == 0 || usuario.inicio.add(tiempo()) <= block.timestamp) {
-        withdrawInternal();
+      if (usuario.inicio == 0 || usuario.inicio.add(tiempo()) <= block.timestamp || usuario.amount == 0) {
+
         uint256 _value = plans[_plan];
 
         require( USDT_Contract.allowance(msg.sender, address(this)) >= buyValue(_value), "aprovado insuficiente");
@@ -447,47 +458,39 @@ contract BinarySystem is Ownable{
           if (_sponsor != address(0) && sisBinario ){
             Investor storage sponsor = investors[_sponsor];
             sponsor.directos++;
-            Hand storage izquierda = handLeft[_sponsor];
-            Hand storage derecha = handRigth[_sponsor];
+            Hand storage hands = sponsor.hands;
             if ( _hand == 0 ) {
                 
-              if (izquierda.referer == address(0) ) {
+              if (hands.referer[0] == address(0) ) {
 
-                izquierda.referer = msg.sender;
+                hands.referer[0] = msg.sender;
                 
               } else {
 
                 address[] memory network;
 
                 network = actualizarNetwork(network);
-
-                network[0] = izquierda.referer;
-
-                 _sponsor = insertionLeft(network);
-                    
-                 izquierda = handLeft[_sponsor];
-                 izquierda.referer = msg.sender;
-                
+                network[0] = hands.referer[0];
+                sponsor = investors[insertionLeft(network)];
+                hands = sponsor.hands;
+                hands.referer[0] = msg.sender;
                 
               }
             }else{
 
-              if ( derecha.referer == address(0) ) {
+              if ( hands.referer[1] == address(0) ) {
 
-                derecha.referer = msg.sender;
+                hands.referer[1] = msg.sender;
                 
               } else {
 
                 address[] memory network;
-
                 network = actualizarNetwork(network);
+                network[0] = hands.referer[1];
 
-                network[0] = derecha.referer;
-
-                  _sponsor = insertionRigth(network);
-                    
-                  derecha = handRigth[_sponsor];
-                  derecha.referer = msg.sender;
+                sponsor = investors[insertionRigth(network)];
+                hands = sponsor.hands;
+                hands.referer[1] = msg.sender;
                 
               
               }
@@ -521,7 +524,7 @@ contract BinarySystem is Ownable{
     }
   }
   
-  function upGradePlan(uint256 _plan) internal {
+  function upGradePlan(uint256 _plan) public {
 
     Investor storage usuario = investors[msg.sender];
     require (_plan > usuario.plan, "tiene que ser un plan mayor para hacer upgrade");
@@ -548,18 +551,17 @@ contract BinarySystem is Ownable{
   function withdrawableBinary(address any_user) public view returns (uint256 left, uint256 rigth, uint256 amount) {
     Investor storage user = investors[any_user];
 
-    Hand storage user_izquierda = handLeft[any_user];
-    Hand storage user_derecha = handRigth[any_user];
+    Hand storage hands = user.hands;
 
     Investor storage investor = investors[any_user];
       
-    if ( user_izquierda.referer != address(0)) {
+    if ( hands.referer[0] != address(0)) {
         
       address[] memory network;
 
       network = actualizarNetwork(network);
 
-      network[0] = user_izquierda.referer;
+      network[0] = hands.referer[0];
 
       network = allnetwork(network);
       
@@ -570,16 +572,16 @@ contract BinarySystem is Ownable{
       }
         
     }
+    left += hands.extra[0];
+    left -= hands.reclamados[0].add(hands.lost[0]);
       
-    left -= user_izquierda.reclamados.add(user_izquierda.lost);
-      
-    if ( user_derecha.referer != address(0)) {
+    if ( hands.referer[1] != address(0)) {
         
         address[] memory network;
 
         network = actualizarNetwork(network);
 
-        network[0] = user_derecha.referer;
+        network[0] = hands.referer[1];
 
         network = allnetwork(network);
         
@@ -590,8 +592,8 @@ contract BinarySystem is Ownable{
         }
         
     }
-
-    rigth -= user_derecha.reclamados.add(user_derecha.lost);
+    rigth += hands.extra[1];
+    rigth -= hands.reclamados[1].add(hands.lost[1]);
 
     if (left < rigth) {
       if (left.mul(porcentPuntosBinario).div(100) <= investor.amount ) {
@@ -618,16 +620,15 @@ contract BinarySystem is Ownable{
   function personasBinary(address any_user) public view returns (uint256 left, uint256 pLeft, uint256 rigth, uint256 pRigth) {
     Investor storage referer = investors[any_user];
 
-    Hand storage referer_izquierda = handLeft[any_user];
-    Hand storage referer_derecha = handRigth[any_user];
+    Hand storage hands = referer.hands;
 
-    if ( referer_izquierda.referer != address(0)) {
+    if ( hands.referer[0] != address(0)) {
 
       address[] memory network;
 
       network = actualizarNetwork(network);
 
-      network[0] = referer_izquierda.referer;
+      network[0] = hands.referer[0];
 
       network = allnetwork(network);
 
@@ -640,13 +641,13 @@ contract BinarySystem is Ownable{
         
     }
     
-    if ( referer_derecha.referer != address(0)) {
+    if ( hands.referer[1] != address(0)) {
         
       address[] memory network;
 
       network = actualizarNetwork(network);
 
-      network[0] = referer_derecha.referer;
+      network[0] = hands.referer[1];
 
       network = allnetwork(network);
       
@@ -674,8 +675,11 @@ contract BinarySystem is Ownable{
 
     for (uint i = 0; i < network.length; i++) {
 
-      address userLeft = handLeft[network[i]].referer;
-      address userRigth = handRigth[network[i]].referer;
+      Investor storage user = investors[network[i]];
+      Hand storage hands = user.hands;
+      
+      address userLeft = hands.referer[0];
+      address userRigth = hands.referer[1];
 
       for (uint u = 0; u < network.length; u++) {
         if (userLeft == network[u]){
@@ -705,14 +709,17 @@ contract BinarySystem is Ownable{
 
     for (uint i = 0; i < network.length; i++) {
 
-      address userLeft = handLeft[network[i]].referer;
+      Investor storage user = investors[network[i]];
+      Hand storage hands = user.hands;
+      
+      address userLeft = hands.referer[0];
 
       if( userLeft == address(0) ){
         return  network[i];
       }
 
       network = actualizarNetwork(network);
-      network[network.length-1] = handLeft[network[i]].referer;
+      network[network.length-1] = userLeft;
 
     }
     insertionLeft(network);
@@ -721,15 +728,17 @@ contract BinarySystem is Ownable{
   function insertionRigth(address[] memory network) public view returns (address wallet) {
 
     for (uint i = 0; i < network.length; i++) {
+      Investor storage user = investors[network[i]];
+      Hand storage hands = user.hands;
 
-      address userRigth = handRigth[network[i]].referer;
+      address userRigth = hands.referer[1];
 
       if( userRigth == address(0) ){
         return network[i];
       }
 
       network = actualizarNetwork(network);
-      network[network.length-1] = handRigth[network[i]].referer;
+      network[network.length-1] = userRigth;
 
     }
     insertionRigth(network);
@@ -802,7 +811,7 @@ contract BinarySystem is Ownable{
 
   }
 
-  function withdrawInternal() internal {
+  function withdrawToDeposit() public {
 
     Investor storage usuario = investors[msg.sender];
     uint256 amount;
@@ -814,32 +823,30 @@ contract BinarySystem is Ownable{
     (amount, left, rigth, gana, pierde) = profit(msg.sender);
 
     if (gana) {
-      Hand storage izquierda = handLeft[msg.sender];
-      Hand storage derecha = handRigth[msg.sender];
+      Hand storage hands = usuario.hands;
 
       if(left < rigth){
-        derecha.reclamados += left;
-        izquierda.reclamados += left;
+        hands.reclamados[0] += left;
+        hands.reclamados[1] += left;
           
       }else{
-        derecha.reclamados += rigth;
-        izquierda.reclamados += rigth;
+        hands.reclamados[0] += rigth;
+        hands.reclamados[1] += rigth;
           
       }
       
     } 
 
     if (pierde) {
-      Hand storage izquierda = handLeft[msg.sender];
-      Hand storage derecha = handRigth[msg.sender];
+      Hand storage hands = usuario.hands;
 
       if(left < rigth){
-        derecha.lost += left;
-        izquierda.lost += left;
+        hands.lost[0] += left;
+        hands.lost[1] += left;
           
       }else{
-        derecha.lost += rigth;
-        izquierda.lost += rigth;
+        hands.lost[0] += rigth;
+        hands.lost[1] += rigth;
           
       }
       
@@ -868,32 +875,30 @@ contract BinarySystem is Ownable{
     require ( SALIDA_Contract.transfer(msg.sender, payValue(amount)), "whitdrawl Fail" );
 
     if (gana) {
-      Hand storage izquierda = handLeft[msg.sender];
-      Hand storage derecha = handRigth[msg.sender];
+      Hand storage hands = usuario.hands;
 
       if(left < rigth){
-        derecha.reclamados += left;
-        izquierda.reclamados += left;
+        hands.reclamados[0] += left;
+        hands.reclamados[1] += left;
           
       }else{
-        derecha.reclamados += rigth;
-        izquierda.reclamados += rigth;
+        hands.reclamados[0] += rigth;
+        hands.reclamados[1] += rigth;
           
       }
       
     } 
 
     if (pierde) {
-      Hand storage izquierda = handLeft[msg.sender];
-      Hand storage derecha = handRigth[msg.sender];
+      Hand storage hands = usuario.hands;
 
       if(left < rigth){
-        derecha.lost += left;
-        izquierda.lost += left;
+        hands.lost[0] += left;
+        hands.lost[1] += left;
           
       }else{
-        derecha.lost += rigth;
-        izquierda.lost += rigth;
+        hands.lost[0] += rigth;
+        hands.lost[1] += rigth;
           
       }
       
